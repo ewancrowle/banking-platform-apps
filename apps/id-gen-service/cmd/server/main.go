@@ -3,10 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
+	v1 "id-service/gen/id_gen/v1"
+	"id-service/gen/id_gen/v1/id_genv1connect"
 	"net/http"
 	"os"
-	v1 "proto/id_gen/v1"
-	"proto/id_gen/v1/id_genv1connect"
 	"strconv"
 
 	"connectrpc.com/connect"

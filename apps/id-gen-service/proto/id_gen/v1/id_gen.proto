@@ -2,8 +2,6 @@ syntax = "proto3";
 
 package id_gen.v1;
 
-option go_package = "id_gen/v1";
-
 import "google/protobuf/empty.proto";
 
 message GenIDResponse {

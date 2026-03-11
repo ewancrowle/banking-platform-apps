@@ -1,6 +1,3 @@
 go 1.26.1
 
-use (
-	../gen
-	./id-gen-service
-)
+use ./id-gen-service

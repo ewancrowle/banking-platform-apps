@@ -53,7 +53,7 @@ coverage.*
 profile.cov
 
 # Generated code
-gen/**/*.pb.go
-gen/**/*_pb.*
-gen/**/*_connectquery.*
-gen/**/*.connect.go
+*.pb.go
+*_pb.*
+*_connectquery.*
+*.connect.go

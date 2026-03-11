@@ -19,4 +19,4 @@ managed:
   enabled: true
   override:
     - file_option: go_package_prefix
-      value: proto
+      value: id-service/gen
