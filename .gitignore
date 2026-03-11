@@ -56,4 +56,4 @@ profile.cov
 gen/**/*.pb.go
 gen/**/*_pb.*
 gen/**/*_connectquery.*
-gen/**/v1connect/
+gen/**/*.connect.go
