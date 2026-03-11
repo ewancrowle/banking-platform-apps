@@ -1,0 +1,8 @@
+{
+  "name": "banking-platform-apps",
+  "private": true,
+  "packageManager": "bun@1.3.9",
+  "workspaces": [
+    "apps/*"
+  ]
+}

@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package id_gen.v1;
+
+option go_package = "id_gen/v1";
+
+import "google/protobuf/empty.proto";
+
+message GenIDResponse {
+  int64 id = 1;
+}
+
+service IDGenService {
+  rpc GenID(google.protobuf.Empty) returns (GenIDResponse);
+}
