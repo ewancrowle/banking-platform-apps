@@ -15,12 +15,12 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-type IDGenServer struct {
+type service struct {
 	id_genv1connect.UnimplementedIDGenServiceHandler
 	sf *sonyflake.Sonyflake
 }
 
-func (s IDGenServer) GenID(_ context.Context, _ *emptypb.Empty) (*v1.GenIDResponse, error) {
+func (s service) GenID(_ context.Context, _ *emptypb.Empty) (*v1.GenIDResponse, error) {
 	id, err := s.sf.NextID()
 	switch {
 	case err != nil:
@@ -48,9 +48,9 @@ func main() {
 		panic(err)
 	}
 
-	idGenServer := IDGenServer{sf: sf}
+	svc := service{sf: sf}
 
-	path, handler := id_genv1connect.NewIDGenServiceHandler(idGenServer, connect.WithInterceptors(validate.NewInterceptor()))
+	path, handler := id_genv1connect.NewIDGenServiceHandler(svc, connect.WithInterceptors(validate.NewInterceptor()))
 
 	mux := http.NewServeMux()
 	mux.Handle(path, handler)
