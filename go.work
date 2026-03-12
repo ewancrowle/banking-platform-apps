@@ -1,0 +1,8 @@
+go 1.26.1
+
+use (
+	./apps/migrations-tool
+	./svcs/account-svc
+	./svcs/identity-svc
+	./svcs/oauth-svc
+)

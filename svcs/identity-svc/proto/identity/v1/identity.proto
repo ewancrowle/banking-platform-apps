@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package identity.v1;
+
+import "google/protobuf/empty.proto";
+
+message IDResponse {
+  int64 id = 1;
+}
+
+service IdentityService {
+  rpc ID(google.protobuf.Empty) returns (IDResponse);
+}

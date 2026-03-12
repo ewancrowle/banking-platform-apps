@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package oauth.v1;
+
+import "buf/validate/validate.proto";
+
+// See https://datatracker.ietf.org/doc/html/rfc6749#section-4.3.2
+message TokenRequest {
+  string email = 2 [(buf.validate.field).string = {
+    email: true,
+    min_len: 3,
+    max_len: 254,
+  }];
+  string password = 3 [(buf.validate.field).string = {
+    min_len: 8,
+    max_len: 254,
+  }];
+}
+
+// See https://datatracker.ietf.org/doc/html/rfc6749#section-4.2.2
+message TokenResponse {
+  string access_token = 1;
+  int32 expires_in = 3;
+  string refresh_token = 4;
+}
+
+// See https://datatracker.ietf.org/doc/html/rfc6749#section-6
+message RefreshRequest {
+  string refresh_token = 2;
+}
+
+service OAuthService {
+  // See https://datatracker.ietf.org/doc/html/rfc6749#section-4.3.2
+  // Also https://datatracker.ietf.org/doc/html/rfc6749#section-3.2
+  rpc Token(TokenRequest) returns (TokenResponse);
+  // See https://datatracker.ietf.org/doc/html/rfc6749#section-6
+  rpc Refresh(RefreshRequest) returns (TokenResponse);
+}

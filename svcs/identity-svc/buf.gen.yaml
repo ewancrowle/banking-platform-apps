@@ -1,0 +1,22 @@
+version: v2
+clean: true
+plugins:
+  - remote: buf.build/protocolbuffers/go
+    out: gen
+    opt: paths=source_relative
+  - remote: buf.build/connectrpc/gosimple
+    out: gen
+    opt:
+      - paths=source_relative
+      - simple
+  - remote: buf.build/bufbuild/es
+    out: gen
+  - remote: buf.build/connectrpc/query-es
+    out: gen
+inputs:
+  - directory: proto
+managed:
+  enabled: true
+  override:
+    - file_option: go_package_prefix
+      value: identity-svc/gen
