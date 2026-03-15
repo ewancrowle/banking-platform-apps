@@ -51,6 +51,10 @@ func (s service) CreateAccount(ctx context.Context, request *v1.CreateAccountReq
 		LastName:     request.LastName,
 		Email:        request.Email,
 		PasswordHash: hash,
+		Line1:        request.Line_1,
+		Line2:        request.Line_2,
+		Town:         request.Town,
+		Postcode:     request.Postcode,
 	}
 
 	if err := a.Insert(ctx, s.db); err != nil {
@@ -92,13 +96,17 @@ func (s service) GetAccount(ctx context.Context, request *v1.GetAccountRequest) 
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	return &v1.GetAccountResponse{Account: &v1.Account{
-		FirstName:      a.FirstName,
-		MiddleNames:    a.MiddleNames,
-		LastName:       a.LastName,
-		Email:          a.Email,
-		KnownAddresses: []*v1.KnownAddress{},
-	}}, nil
+	return &v1.GetAccountResponse{
+		FirstName:   a.FirstName,
+		MiddleNames: a.MiddleNames,
+		LastName:    a.LastName,
+		Email:       a.Email,
+		Line_1:      a.Line1,
+		Line_2:      a.Line2,
+		Town:        a.Town,
+		Postcode:    a.Postcode,
+		CreatedAt:   a.CreatedAt.String(),
+	}, nil
 }
 
 func main() {

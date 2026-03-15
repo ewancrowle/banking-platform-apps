@@ -6,33 +6,56 @@ import "buf/validate/validate.proto";
 
 // See https://datatracker.ietf.org/doc/html/rfc6749#section-4.3.2
 message TokenRequest {
-  string email = 2 [(buf.validate.field).string = {
+  string email = 1 [(buf.validate.field).string = {
     email: true,
     min_len: 3,
     max_len: 254,
   }];
-  string password = 3 [(buf.validate.field).string = {
+  string password = 2 [(buf.validate.field).string = {
     min_len: 8,
     max_len: 254,
   }];
+  string ip_address = 3;
+  string user_agent = 4;
 }
 
 // See https://datatracker.ietf.org/doc/html/rfc6749#section-4.2.2
 message TokenResponse {
   string access_token = 1;
-  int32 expires_in = 3;
-  string refresh_token = 4;
+  int32 expires_in = 2;
+  string refresh_token = 3;
 }
 
 // See https://datatracker.ietf.org/doc/html/rfc6749#section-6
 message RefreshRequest {
-  string refresh_token = 2;
+  string refresh_token = 1 [(buf.validate.field).required = true];
 }
 
+// See https://datatracker.ietf.org/doc/html/rfc6749#section-4.2.2
+message RefreshResponse {
+  string access_token = 1;
+  int32 expires_in = 2;
+  string refresh_token = 3;
+}
+
+// See https://datatracker.ietf.org/doc/html/rfc7662#section-2.1
+message IntrospectRequest {
+  string access_token = 1;
+}
+
+// See https://datatracker.ietf.org/doc/html/rfc7662#section-2.2
+message IntrospectResponse {
+  string email = 2;
+}
+
+// OAuthService adapts the OAuth 2.0 Authorization Framework (RFC 6749) and
+// Token Introspection (RFC 7662) standards.
 service OAuthService {
   // See https://datatracker.ietf.org/doc/html/rfc6749#section-4.3.2
   // Also https://datatracker.ietf.org/doc/html/rfc6749#section-3.2
   rpc Token(TokenRequest) returns (TokenResponse);
   // See https://datatracker.ietf.org/doc/html/rfc6749#section-6
-  rpc Refresh(RefreshRequest) returns (TokenResponse);
+  rpc Refresh(RefreshRequest) returns (RefreshResponse);
+  // See https://datatracker.ietf.org/doc/html/rfc7662#section-2.1
+  rpc Introspect(IntrospectRequest) returns (IntrospectResponse);
 }

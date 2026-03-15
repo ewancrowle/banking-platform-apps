@@ -26,6 +26,21 @@ message CreateAccountRequest {
     min_len: 8,
     max_len: 254,
   }];
+  string line_1 = 6 [(buf.validate.field).string = {
+    min_len: 1,
+    max_len: 35,
+  }];
+  string line_2 = 7 [(buf.validate.field).string = {
+    max_len: 35,
+  }];
+  string town = 8 [(buf.validate.field).string = {
+    min_len: 1,
+    max_len: 35,
+  }];
+  string postcode = 9 [(buf.validate.field).string = {
+    min_len: 5,
+    max_len: 8,
+  }];
 }
 
 message CreateAccountResponse {
@@ -52,25 +67,16 @@ message GetAccountRequest {
   int64 id = 1;
 }
 
-message Account {
+message GetAccountResponse {
   string first_name = 1;
   string middle_names = 2;
   string last_name = 3;
   string email = 4;
-  repeated KnownAddress known_addresses = 5;
-}
-
-message KnownAddress {
-  string line_1 = 1;
-  string line_2 = 2;
-  string town = 3;
-  string county = 4;
-  string postcode = 5;
-  bool is_primary = 6;
-}
-
-message GetAccountResponse {
-  Account account = 1;
+  string line_1 = 5;
+  string line_2 = 6;
+  string town = 7;
+  string postcode = 8;
+  string created_at = 9;
 }
 
 service AccountService {

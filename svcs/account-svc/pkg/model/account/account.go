@@ -16,11 +16,15 @@ type Account struct {
 	LastName     string `bun:",notnull"`
 	Email        string `bun:",unique,notnull"`
 	PasswordHash string `bun:",notnull"`
+	Line1        string `bun:",notnull"`
+	Line2        string
+	Town         string `bun:",notnull"`
+	Postcode     string `bun:",notnull"`
 	IsFrozen     bool   `bun:",notnull"`
 
-	CreatedAt time.Time `bun:",nullzero,notnull,default:current_timestamp"`
-	UpdatedAt time.Time `bun:",nullzero,notnull,default:current_timestamp"`
-	ClosedAt  time.Time `bun:",soft_delete,nullzero"`
+	CreatedAt time.Time    `bun:"created_at,nullzero,notnull,default:current_timestamp"`
+	UpdatedAt time.Time    `bun:"updated_at,nullzero,notnull,default:current_timestamp"`
+	DeletedAt bun.NullTime `bun:"deleted_at,soft_delete"`
 }
 
 func (a *Account) Insert(ctx context.Context, db *bun.DB) error {
