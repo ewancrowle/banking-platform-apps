@@ -6,13 +6,6 @@ WORKDIR /app
 # Copy source code
 COPY . .
 
-# Install buf
-RUN go install github.com/bufbuild/buf/cmd/buf@latest
-
-# Generate Buf code
-RUN buf generate svcs/identity-svc --include-imports --template svcs/identity-svc/buf.gen.yaml --output svcs/identity-svc
-RUN buf generate svcs/account-svc --include-imports --template svcs/account-svc/buf.gen.yaml --output svcs/account-svc
-
 # Build the application
 # Using CGO_ENABLED=0 for a static binary that works with distroless/static
 RUN CGO_ENABLED=0 GOOS=linux go build -o /server svcs/account-svc/cmd/server/main.go

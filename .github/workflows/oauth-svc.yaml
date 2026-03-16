@@ -6,8 +6,13 @@ on:
       - "svcs/oauth-svc/**"
       - ".github/workflows/oauth-svc.yaml"
 jobs:
-  build:
+  build-and-push-image:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
     steps:
       - uses: actions/checkout@v5
       - name: Setup Go
