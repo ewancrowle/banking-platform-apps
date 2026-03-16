@@ -33,13 +33,13 @@ import (
 )
 
 type config struct {
-	port int `default:"8080"`
+	Port int `default:"8080"`
 	// e.g. "http://localhost:8080"
-	identityServiceAddr string `required:"true" split_words:"true"`
-	accountServiceAddr  string `required:"true" split_words:"true"`
-	jwtSecret           string `required:"true" split_words:"true"`
+	IdentityServiceAddr string `required:"true" split_words:"true"`
+	AccountServiceAddr  string `required:"true" split_words:"true"`
+	JWTSecret           string `envconfig:"jwt_secret" required:"true"`
 	// e.g. "postgres://postgres:@localhost:5432/test?sslmode=disable"
-	dbAddr string `required:"true" split_words:"true"`
+	DBAddr string `envconfig:"db_addr" required:"true"`
 }
 
 type service struct {
@@ -302,7 +302,7 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	sqlDB := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(c.dbAddr)))
+	sqlDB := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(c.DBAddr)))
 
 	db := bun.NewDB(sqlDB, pgdialect.New())
 	db.WithQueryHook(bundebug.NewQueryHook(
@@ -312,19 +312,19 @@ func main() {
 
 	identityServiceClient := identityv1connect.NewIdentityServiceClient(
 		http.DefaultClient,
-		c.identityServiceAddr,
+		c.IdentityServiceAddr,
 	)
 
 	accountServiceClient := accountv1connect.NewAccountServiceClient(
 		http.DefaultClient,
-		c.accountServiceAddr,
+		c.AccountServiceAddr,
 	)
 
 	svc := service{
 		db:                    db,
 		identityServiceClient: identityServiceClient,
 		accountServiceClient:  accountServiceClient,
-		jwtSecret:             c.jwtSecret,
+		jwtSecret:             c.JWTSecret,
 	}
 
 	path, handler := oauthv1connect.NewOAuthServiceHandler(svc, connect.WithInterceptors(validate.NewInterceptor()))
@@ -337,7 +337,7 @@ func main() {
 	// Use h2c so we can serve HTTP/2 without TLS.
 	p.SetUnencryptedHTTP2(true)
 	s := http.Server{
-		Addr:      fmt.Sprintf(":%d", c.port),
+		Addr:      fmt.Sprintf(":%d", c.Port),
 		Handler:   mux,
 		Protocols: p,
 	}

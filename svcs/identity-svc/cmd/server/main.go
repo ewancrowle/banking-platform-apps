@@ -16,8 +16,8 @@ import (
 )
 
 type config struct {
-	port      int `default:"8080"`
-	machineID int `envconfig:"machine_id" required:"true"`
+	Port      int `default:"8080"`
+	MachineID int `envconfig:"machine_id" required:"true"`
 }
 
 type service struct {
@@ -43,7 +43,7 @@ func main() {
 	}
 
 	sf, err := sonyflake.New(sonyflake.Settings{MachineID: func() (int, error) {
-		return c.machineID, nil
+		return c.MachineID, nil
 	}})
 	if err != nil {
 		panic(err)
@@ -61,7 +61,7 @@ func main() {
 	// Use h2c so we can serve HTTP/2 without TLS.
 	p.SetUnencryptedHTTP2(true)
 	s := http.Server{
-		Addr:      fmt.Sprintf(":%d", c.port),
+		Addr:      fmt.Sprintf(":%d", c.Port),
 		Handler:   mux,
 		Protocols: p,
 	}
