@@ -5,6 +5,8 @@ go 1.26.1
 require (
 	connectrpc.com/connect v1.19.1
 	connectrpc.com/validate v0.6.0
+	github.com/golang-jwt/jwt/v5 v5.3.1
+	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/uptrace/bun v1.2.18
 	github.com/uptrace/bun/dialect/pgdialect v1.2.18
 	github.com/uptrace/bun/driver/pgdriver v1.2.18
@@ -19,10 +21,8 @@ require (
 	github.com/antlr4-go/antlr/v4 v4.13.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/fatih/color v1.18.0 // indirect
-	github.com/golang-jwt/jwt/v5 v5.3.1 // indirect
 	github.com/google/cel-go v0.27.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
-	github.com/kelseyhightower/envconfig v1.4.0 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/puzpuzpuz/xsync/v3 v3.5.1 // indirect

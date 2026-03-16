@@ -1,0 +1,19 @@
+on:
+  push:
+    paths:
+      - "svcs/identity-svc/**"
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.26.1"
+      - uses: bufbuild/buf-action@v1
+        with:
+          setup_only: true
+      - run: buf generate svcs/identity-svc --include-imports --template svcs/identity-svc/buf.gen.yaml --output svcs/identity-svc
+      - name: Build
+        run: go build -v svcs/identity-svc/cmd/server/main.go
