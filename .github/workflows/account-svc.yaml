@@ -3,6 +3,7 @@ on:
     paths:
       - "svcs/identity-svc/**"
       - "svcs/account-svc/**"
+      - ".github/workflows/account-svc.yaml"
 jobs:
   build:
     runs-on: ubuntu-latest

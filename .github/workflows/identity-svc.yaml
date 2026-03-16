@@ -2,6 +2,7 @@ on:
   push:
     paths:
       - "svcs/identity-svc/**"
+      - ".github/workflows/identity-svc.yaml"
 jobs:
   build:
     runs-on: ubuntu-latest

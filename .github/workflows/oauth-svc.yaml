@@ -4,6 +4,7 @@ on:
       - "svcs/identity-svc/**"
       - "svcs/account-svc/**"
       - "svcs/oauth-svc/**"
+      - ".github/workflows/oauth-svc.yaml"
 jobs:
   build:
     runs-on: ubuntu-latest
