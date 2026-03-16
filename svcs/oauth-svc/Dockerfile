@@ -3,16 +3,20 @@ FROM golang:1.26.1-alpine AS builder
 
 WORKDIR /app
 
-# Copy dependency files
-COPY go.mod go.sum ./
-RUN go mod download
-
 # Copy source code
 COPY . .
 
+# Install buf
+RUN go install github.com/bufbuild/buf/cmd/buf@latest
+
+# Generate Buf code
+RUN buf generate svcs/identity-svc --include-imports --template svcs/identity-svc/buf.gen.yaml --output svcs/identity-svc
+RUN buf generate svcs/account-svc --include-imports --template svcs/account-svc/buf.gen.yaml --output svcs/account-svc
+RUN buf generate svcs/oauth-svc --include-imports --template svcs/oauth-svc/buf.gen.yaml --output svcs/oauth-svc
+
 # Build the application
 # Using CGO_ENABLED=0 for a static binary that works with distroless/static
-RUN CGO_ENABLED=0 GOOS=linux go build -o /server ./cmd/server/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -o /server svcs/oauth-svc/cmd/server/main.go
 
 # Final stage
 FROM gcr.io/distroless/static-debian12
