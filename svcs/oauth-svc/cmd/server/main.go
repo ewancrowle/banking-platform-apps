@@ -10,6 +10,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"identity-svc/gen/identity/v1/identityv1connect"
 	"log"
 	"net/http"
@@ -177,6 +178,10 @@ func (s service) Refresh(ctx context.Context, request *v1.RefreshRequest) (*v1.R
 		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("refresh token expired"))
 	}
 
+	if err = refreshToken.SetExpiresAt(ctx, s.db, time.Now()); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
 	id, err := s.identityServiceClient.ID(ctx, &emptypb.Empty{})
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -224,8 +229,7 @@ func (s service) Refresh(ctx context.Context, request *v1.RefreshRequest) (*v1.R
 		Hash: hashString,
 	}
 
-	err = refreshToken.Insert(ctx, s.db)
-	if err != nil {
+	if err = refreshToken.Insert(ctx, s.db); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
@@ -253,7 +257,11 @@ func (s service) Refresh(ctx context.Context, request *v1.RefreshRequest) (*v1.R
 func (s service) Introspect(ctx context.Context, request *v1.IntrospectRequest) (*v1.IntrospectResponse, error) {
 	claims := &jwt.RegisteredClaims{}
 
-	t, err := jwt.ParseWithClaims(request.AccessToken, claims, func(_ *jwt.Token) (any, error) {
+	t, err := jwt.ParseWithClaims(request.AccessToken, claims, func(j *jwt.Token) (any, error) {
+		if _, ok := j.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", j.Header["alg"])
+		}
+
 		return []byte(s.jwtSecret), nil
 	})
 	if err != nil {
@@ -264,7 +272,7 @@ func (s service) Introspect(ctx context.Context, request *v1.IntrospectRequest) 
 		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("access t is invalid"))
 	}
 
-	accessTokenID, err := strconv.ParseInt(claims.Subject, 10, 64)
+	accessTokenID, err := strconv.ParseInt(claims.ID, 10, 64)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -329,9 +337,13 @@ func main() {
 	// Use h2c so we can serve HTTP/2 without TLS.
 	p.SetUnencryptedHTTP2(true)
 	s := http.Server{
-		Addr:      "localhost:8080",
+		Addr:      fmt.Sprintf(":%d", c.port),
 		Handler:   mux,
 		Protocols: p,
 	}
-	s.ListenAndServe()
+
+	err = s.ListenAndServe()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 }

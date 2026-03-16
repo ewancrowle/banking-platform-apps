@@ -5,15 +5,20 @@ import (
 	"fmt"
 	v1 "identity-svc/gen/identity/v1"
 	"identity-svc/gen/identity/v1/identityv1connect"
+	"log"
 	"net/http"
-	"os"
-	"strconv"
 
 	"connectrpc.com/connect"
 	"connectrpc.com/validate"
+	"github.com/kelseyhightower/envconfig"
 	"github.com/sony/sonyflake/v2"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
+
+type config struct {
+	port      int `default:"8080"`
+	machineID int `envconfig:"machine_id" required:"true"`
+}
 
 type service struct {
 	identityv1connect.IdentityServiceHandler
@@ -31,18 +36,14 @@ func (s service) ID(_ context.Context, _ *emptypb.Empty) (*v1.IDResponse, error)
 }
 
 func main() {
+	var c config
+	err := envconfig.Process("", &c)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
 	sf, err := sonyflake.New(sonyflake.Settings{MachineID: func() (int, error) {
-		str := os.Getenv("MACHINE_ID")
-		if str == "" {
-			return 0, fmt.Errorf("MACHINE_ID env var is not set")
-		}
-
-		id, err := strconv.Atoi(str)
-		if err != nil {
-			return 0, fmt.Errorf("invalid MACHINE_ID: %v", err)
-		}
-
-		return id, nil
+		return c.machineID, nil
 	}})
 	if err != nil {
 		panic(err)
@@ -60,9 +61,13 @@ func main() {
 	// Use h2c so we can serve HTTP/2 without TLS.
 	p.SetUnencryptedHTTP2(true)
 	s := http.Server{
-		Addr:      "localhost:8080",
+		Addr:      fmt.Sprintf(":%d", c.port),
 		Handler:   mux,
 		Protocols: p,
 	}
-	s.ListenAndServe()
+
+	err = s.ListenAndServe()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 }

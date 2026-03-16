@@ -65,3 +65,8 @@ func (t *RefreshToken) Delete(ctx context.Context, db *bun.DB) error {
 	_, err := db.NewDelete().Model(t).WherePK().Exec(ctx)
 	return err
 }
+
+func (t *RefreshToken) SetExpiresAt(ctx context.Context, db *bun.DB, expiresAt time.Time) error {
+	_, err := db.NewUpdate().Model(t).Set("expires_at = ?", expiresAt).WherePK().Exec(ctx)
+	return err
+}

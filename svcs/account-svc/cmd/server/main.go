@@ -7,18 +7,29 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"identity-svc/gen/identity/v1/identityv1connect"
+	"log"
 	"net/http"
 
 	"connectrpc.com/connect"
 	"connectrpc.com/validate"
 	"github.com/alexedwards/argon2id"
+	"github.com/kelseyhightower/envconfig"
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/pgdialect"
 	"github.com/uptrace/bun/driver/pgdriver"
 	"github.com/uptrace/bun/extra/bundebug"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
+
+type config struct {
+	port int `default:"8080"`
+	// e.g. "http://localhost:8080"
+	identityServiceAddr string `required:"true" split_words:"true"`
+	// e.g. "postgres://postgres:@localhost:5432/test?sslmode=disable"
+	dbAddr string `required:"true" split_words:"true"`
+}
 
 type service struct {
 	accountv1connect.AccountServiceHandler
@@ -110,10 +121,15 @@ func (s service) GetAccount(ctx context.Context, request *v1.GetAccountRequest) 
 }
 
 func main() {
-	dsn := "postgres://postgres:@localhost:5432/test?sslmode=disable"
-	sqldb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(dsn)))
+	var c config
+	err := envconfig.Process("", &c)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 
-	db := bun.NewDB(sqldb, pgdialect.New())
+	sqlDB := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(c.dbAddr)))
+
+	db := bun.NewDB(sqlDB, pgdialect.New())
 	db.WithQueryHook(bundebug.NewQueryHook(
 		bundebug.WithEnabled(false),
 		bundebug.FromEnv(),
@@ -121,7 +137,7 @@ func main() {
 
 	identityServiceClient := identityv1connect.NewIdentityServiceClient(
 		http.DefaultClient,
-		"http://localhost:8080",
+		c.identityServiceAddr,
 	)
 
 	svc := service{
@@ -139,9 +155,13 @@ func main() {
 	// Use h2c so we can serve HTTP/2 without TLS.
 	p.SetUnencryptedHTTP2(true)
 	s := http.Server{
-		Addr:      "localhost:8080",
+		Addr:      fmt.Sprintf(":%d", c.port),
 		Handler:   mux,
 		Protocols: p,
 	}
-	s.ListenAndServe()
+
+	err = s.ListenAndServe()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 }
