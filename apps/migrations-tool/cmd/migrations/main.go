@@ -47,7 +47,11 @@ import (
 )
 
 func main() {
-	dsn := "postgres://postgres:@localhost:5432/test?sslmode=disable"
+	dsn := os.Getenv("DB_ADDR")
+	if dsn == "" {
+		log.Fatal("DB_ADDR env var is not set")
+	}
+
 	sqldb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(dsn)))
 
 	db := bun.NewDB(sqldb, pgdialect.New())

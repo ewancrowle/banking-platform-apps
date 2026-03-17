@@ -26,11 +26,9 @@ type service struct {
 }
 
 func (s service) ID(_ context.Context, _ *emptypb.Empty) (*v1.IDResponse, error) {
-	id, err := s.sf.NextID()
-	switch {
-	case err != nil:
+	if id, err := s.sf.NextID(); err != nil {
 		return nil, err
-	default:
+	} else {
 		return &v1.IDResponse{Id: id}, nil
 	}
 }

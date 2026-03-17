@@ -33,13 +33,14 @@ import (
 )
 
 type config struct {
-	Port int `default:"8080"`
-	// e.g. "http://localhost:8080"
+	Port                int    `default:"8080"`
 	IdentityServiceAddr string `required:"true" split_words:"true"`
 	AccountServiceAddr  string `required:"true" split_words:"true"`
 	JWTSecret           string `envconfig:"jwt_secret" required:"true"`
-	// e.g. "postgres://postgres:@localhost:5432/test?sslmode=disable"
-	DBAddr string `envconfig:"db_addr" required:"true"`
+	DBHost              string `envconfig:"db_host" required:"true"`
+	DBName              string `envconfig:"db_name" required:"true"`
+	DBUsername          string `envconfig:"db_username" required:"true"`
+	DBPassword          string `envconfig:"db_password" required:"true"`
 }
 
 type service struct {
@@ -302,7 +303,12 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	sqlDB := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(c.DBAddr)))
+	sqlDB := sql.OpenDB(pgdriver.NewConnector(
+		pgdriver.WithAddr(c.DBHost),
+		pgdriver.WithDatabase(c.DBName),
+		pgdriver.WithUser(c.DBUsername),
+		pgdriver.WithPassword(c.DBPassword),
+	))
 
 	db := bun.NewDB(sqlDB, pgdialect.New())
 	db.WithQueryHook(bundebug.NewQueryHook(
