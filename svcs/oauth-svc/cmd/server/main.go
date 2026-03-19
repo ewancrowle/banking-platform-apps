@@ -292,7 +292,7 @@ func (s service) Introspect(ctx context.Context, request *v1.IntrospectRequest) 
 	}
 
 	return &v1.IntrospectResponse{
-		Email: accessToken.Account.Email,
+		AccountId: *accessToken.AccountID,
 	}, nil
 }
 

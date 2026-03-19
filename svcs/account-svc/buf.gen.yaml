@@ -10,9 +10,10 @@ plugins:
       - paths=source_relative
       - simple
   - remote: buf.build/bufbuild/es
-    out: gen
+    out: ../../pkgs/protos/gen/account
+    opt: target=ts
   - remote: buf.build/connectrpc/query-es
-    out: gen
+    out: ../../pkgs/protos/gen/account
 inputs:
   - directory: proto
 managed:

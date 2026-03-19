@@ -45,7 +45,7 @@ message IntrospectRequest {
 
 // See https://datatracker.ietf.org/doc/html/rfc7662#section-2.2
 message IntrospectResponse {
-  string email = 2;
+  int64 account_id = 1;
 }
 
 // OAuthService adapts the OAuth 2.0 Authorization Framework (RFC 6749) and
