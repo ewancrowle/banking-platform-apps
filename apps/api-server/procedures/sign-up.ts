@@ -1,6 +1,7 @@
-import { publicProcedure } from "../server.ts";
 import { z } from "zod";
 import accountService from "../rpc-clients/account-service.ts";
+import oauthService from "../rpc-clients/oauth-service.ts";
+import { publicProcedure } from "../server.ts";
 
 const signUp = publicProcedure
 	.input(
@@ -20,7 +21,21 @@ const signUp = publicProcedure
 			postcode: z.string(),
 		}),
 	)
-	.output(z.object({ id: z.bigint() }))
-	.mutation((opts) => accountService.createAccount(opts.input));
+	.output(
+		z.object({
+			accessToken: z.string(),
+			expiresIn: z.number(),
+			refreshToken: z.string(),
+		}),
+	)
+	.mutation(async (opts) => {
+		await accountService.createAccount(opts.input);
+		return oauthService.token({
+			email: opts.input.email,
+			ipAddress: opts.ctx.ipAddress,
+			password: opts.input.password,
+			userAgent: opts.ctx.userAgent,
+		});
+	});
 
 export default signUp;

@@ -1,11 +1,11 @@
 import { initTRPC, TRPCError } from "@trpc/server";
 import { createHTTPServer } from "@trpc/server/adapters/standalone";
-import signUp from "./procedures/sign-up.ts";
-import serverError from "./utils/server-error.ts";
+import getAccount from "./procedures/get-account.ts";
 import login from "./procedures/login.ts";
 import refresh from "./procedures/refresh.ts";
+import signUp from "./procedures/sign-up.ts";
 import { type Context, createContext } from "./utils/context.ts";
-import getAccount from "./procedures/get-account.ts";
+import serverError from "./utils/server-error.ts";
 
 /**
  * Initialization of tRPC backend

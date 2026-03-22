@@ -1,6 +1,6 @@
-import { publicProcedure } from "../server.ts";
 import { z } from "zod";
 import oauthService from "../rpc-clients/oauth-service.ts";
+import { publicProcedure } from "../server.ts";
 
 const login = publicProcedure
 	.input(

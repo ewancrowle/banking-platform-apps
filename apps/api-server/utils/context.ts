@@ -1,11 +1,13 @@
 import type { CreateHTTPContextOptions } from "@trpc/server/adapters/standalone";
-import oauthService from "../rpc-clients/oauth-service.ts";
 import accountService from "../rpc-clients/account-service.ts";
+import oauthService from "../rpc-clients/oauth-service.ts";
 
 export async function createContext({ req }: CreateHTTPContextOptions) {
 	if (!req.headers.authorization) {
 		return {
 			account: null,
+			ipAddress: req.socket.remoteAddress,
+			userAgent: req.headers["user-agent"],
 		};
 	}
 
@@ -24,6 +26,8 @@ export async function createContext({ req }: CreateHTTPContextOptions) {
 	} catch (err) {
 		return {
 			account: null,
+			ipAddress: req.socket.remoteAddress,
+			userAgent: req.headers["user-agent"],
 		};
 	}
 }

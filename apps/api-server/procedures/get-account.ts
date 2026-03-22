@@ -1,5 +1,5 @@
 import { protectedProcedure } from "../server.ts";
 
-const getAccount = protectedProcedure.mutation((opts) => opts.ctx.account);
+const getAccount = protectedProcedure.query((opts) => opts.ctx.account);
 
 export default getAccount;
