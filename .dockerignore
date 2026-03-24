@@ -30,7 +30,7 @@ secrets.yaml
 # Dependencies
 vendor/
 # Go workspace
-go.work
+# go.work
 
 # Node.js
 node_modules/

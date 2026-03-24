@@ -21,6 +21,3 @@ managed:
   override:
     - file_option: go_package_prefix
       value: identity-svc/gen
-  disable:
-    - file_option: go_package
-      module: buf.build/bufbuild/protovalidate
