@@ -6,7 +6,10 @@ import serverError from "./utils/server-error";
 const server = createHTTPServer({
   router: appRouter,
   createContext,
-  onError: (opts) => serverError(opts.error),
+  onError: (opts) => {
+    console.error("Error:", error);
+    serverError(opts.error)
+  },
 });
 
 server.listen(3000);

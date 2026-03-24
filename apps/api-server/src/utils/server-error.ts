@@ -2,14 +2,7 @@ import { Code, ConnectError } from "@connectrpc/connect";
 import { TRPCError } from "@trpc/server";
 
 export default function (error: TRPCError) {
-  console.error("Error:", error);
-
-  if (!error.cause || !(error.cause instanceof Error)) {
-    return;
-  }
-
   const connectErr = ConnectError.from(error.cause);
-
   switch (connectErr.code) {
     case Code.AlreadyExists:
       throw new TRPCError({
@@ -41,13 +34,11 @@ export default function (error: TRPCError) {
         message: connectErr.message,
         cause: error.cause,
       });
-    case Code.Internal:
+    default:
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
         message: connectErr.message,
         cause: error.cause,
       });
-    default:
-      return;
   }
 }

@@ -5,7 +5,7 @@ import {OAuthService} from "protos/oauth";
 
 const transport = createConnectTransport({
   httpVersion: "2",
-  baseUrl: env.ACCOUNT_SERVICE_URL,
+  baseUrl: env.AUTH_SERVICE_URL,
 });
 
 const client = createClient(OAuthService, transport);

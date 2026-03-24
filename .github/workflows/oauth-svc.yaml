@@ -26,7 +26,7 @@ jobs:
       - run: buf generate svcs/account-svc --template svcs/account-svc/buf.gen.yaml --output svcs/account-svc
       - run: buf generate svcs/oauth-svc --template svcs/oauth-svc/buf.gen.yaml --output svcs/oauth-svc
       - name: Build
-        run: go build -v svcs/account-svc/cmd/server/main.go
+        run: go build -v svcs/oauth-svc/cmd/server/main.go
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v4
         with:
