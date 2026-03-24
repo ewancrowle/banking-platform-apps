@@ -11,7 +11,7 @@ COPY pkgs/protos/package.json ./pkgs/protos/
 RUN rm bun.lock && bun install --production
 
 # Release stage
-FROM oven/bun:distroless AS release
+FROM oven/bun:1 AS release
 WORKDIR /usr/src/app
 
 # Copy production dependencies and workspace structure from the build stage
