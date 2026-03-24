@@ -326,22 +326,6 @@ func main() {
 		c.AccountServiceAddr,
 	)
 
-	loggingInterceptor := connect.UnaryInterceptorFunc(
-		func(next connect.UnaryFunc) connect.UnaryFunc {
-			return func(ctx context.Context, request connect.AnyRequest) (connect.AnyResponse, error) {
-				fmt.Println("calling:", request.Spec().Procedure)
-				fmt.Println("request:", request.Any())
-				response, err := next(ctx, request)
-				if err != nil {
-					fmt.Println("error:", err)
-				} else {
-					fmt.Println("response:", response.Any())
-				}
-				return response, err
-			}
-		},
-	)
-
 	svc := service{
 		db:                    db,
 		identityServiceClient: identityServiceClient,
@@ -349,18 +333,10 @@ func main() {
 		jwtSecret:             c.JWTSecret,
 	}
 
-	path, handler := oauthv1connect.NewOAuthServiceHandler(svc, connect.WithInterceptors(validate.NewInterceptor(), loggingInterceptor))
+	path, handler := oauthv1connect.NewOAuthServiceHandler(svc, connect.WithInterceptors(validate.NewInterceptor()))
 
 	mux := http.NewServeMux()
-	//mux.Handle(path, handler)
-
-	loggingMiddleware := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Do stuff here
-		log.Println(r.RequestURI)
-		// Call the next handler, which can be another middleware in the chain, or the final handler.
-		handler.ServeHTTP(w, r)
-	})
-	mux.Handle(path, loggingMiddleware)
+	mux.Handle(path, handler)
 
 	p := new(http.Protocols)
 	p.SetHTTP1(true)
