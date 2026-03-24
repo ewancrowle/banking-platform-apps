@@ -1,5 +1,5 @@
 import { createHTTPServer } from "@trpc/server/adapters/standalone";
-import { appRouter } from "./trpc";
+import { appRouter } from "./trpc/routers/app";
 import { createContext } from "./utils/context";
 import serverError from "./utils/server-error";
 

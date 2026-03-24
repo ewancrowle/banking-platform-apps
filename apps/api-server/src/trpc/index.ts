@@ -1,6 +1,5 @@
 import { initTRPC, TRPCError } from "@trpc/server";
 import { Context } from "../utils/context";
-import { authRouter } from "./routers/auth";
 
 const t = initTRPC.context<Context>().create();
 
@@ -20,9 +19,3 @@ export const protectedProcedure = t.procedure.use(async (opts) => {
     },
   });
 });
-
-export const appRouter = router({
-  auth: authRouter,
-});
-
-export type AppRouter = typeof appRouter;
