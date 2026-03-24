@@ -2,6 +2,8 @@ import { Code, ConnectError } from "@connectrpc/connect";
 import { TRPCError } from "@trpc/server";
 
 export default function (error: TRPCError) {
+  console.error("Error:", error);
+
   if (!error.cause || !(error.cause instanceof Error)) {
     return;
   }
