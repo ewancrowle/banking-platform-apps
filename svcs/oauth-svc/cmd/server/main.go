@@ -352,7 +352,15 @@ func main() {
 	path, handler := oauthv1connect.NewOAuthServiceHandler(svc, connect.WithInterceptors(validate.NewInterceptor(), loggingInterceptor))
 
 	mux := http.NewServeMux()
-	mux.Handle(path, handler)
+	//mux.Handle(path, handler)
+
+	loggingMiddleware := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Do stuff here
+		log.Println(r.RequestURI)
+		// Call the next handler, which can be another middleware in the chain, or the final handler.
+		handler.ServeHTTP(w, r)
+	})
+	mux.Handle(path, loggingMiddleware)
 
 	p := new(http.Protocols)
 	p.SetHTTP1(true)
