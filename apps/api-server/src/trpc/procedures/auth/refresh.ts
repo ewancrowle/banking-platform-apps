@@ -16,9 +16,9 @@ const refresh = publicProcedure
       refreshToken: z.string(),
     }),
   )
-  .mutation((opts) => {
+  .mutation(async (opts) => {
     try {
-      return oauthService.refresh(opts.input);
+      return await oauthService.refresh(opts.input);
     } catch (err) {
       throw serverError(err);
     }

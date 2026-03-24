@@ -28,7 +28,7 @@ const signUp = publicProcedure
   .mutation(async (opts) => {
     try {
       await accountService.createAccount(opts.input);
-      return oauthService.token({
+      return await oauthService.token({
         email: opts.input.email,
         ipAddress: opts.ctx.ipAddress,
         password: opts.input.password,

@@ -17,9 +17,9 @@ const login = publicProcedure
       refreshToken: z.string(),
     }),
   )
-  .mutation((opts) => {
+  .mutation(async (opts) => {
     try {
-      return oauthService.token(opts.input);
+      return await oauthService.token(opts.input);
     } catch (err) {
       throw serverError(err);
     }
