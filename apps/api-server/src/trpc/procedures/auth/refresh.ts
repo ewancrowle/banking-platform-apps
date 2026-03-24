@@ -1,6 +1,7 @@
 import { z } from "zod";
 import oauthService from "../../../clients/oauth";
 import { publicProcedure } from "../../index";
+import serverError from "../../../utils/server-error";
 
 const refresh = publicProcedure
   .input(
@@ -15,6 +16,12 @@ const refresh = publicProcedure
       refreshToken: z.string(),
     }),
   )
-  .mutation((opts) => oauthService.refresh(opts.input));
+  .mutation((opts) => {
+    try {
+      return oauthService.refresh(opts.input);
+    } catch (err) {
+      throw serverError(err);
+    }
+  });
 
 export default refresh;

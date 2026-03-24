@@ -1,44 +1,44 @@
 import { Code, ConnectError } from "@connectrpc/connect";
 import { TRPCError } from "@trpc/server";
 
-export default function (error: TRPCError) {
-  const connectErr = ConnectError.from(error.cause);
+export default function (error: unknown): TRPCError {
+  const connectErr = ConnectError.from(error);
   switch (connectErr.code) {
     case Code.AlreadyExists:
-      throw new TRPCError({
+      return new TRPCError({
         code: "CONFLICT",
         message: connectErr.message,
-        cause: error.cause,
+        cause: error,
       });
     case Code.InvalidArgument:
-      throw new TRPCError({
+      return new TRPCError({
         code: "BAD_REQUEST",
         message: connectErr.message,
-        cause: error.cause,
+        cause: error,
       });
     case Code.NotFound:
-      throw new TRPCError({
+      return new TRPCError({
         code: "NOT_FOUND",
         message: connectErr.message,
-        cause: error.cause,
+        cause: error,
       });
     case Code.Unauthenticated:
-      throw new TRPCError({
+      return new TRPCError({
         code: "UNAUTHORIZED",
         message: connectErr.message,
-        cause: error.cause,
+        cause: error,
       });
     case Code.PermissionDenied:
-      throw new TRPCError({
+      return new TRPCError({
         code: "FORBIDDEN",
         message: connectErr.message,
-        cause: error.cause,
+        cause: error,
       });
     default:
-      throw new TRPCError({
+      return new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
         message: connectErr.message,
-        cause: error.cause,
+        cause: error,
       });
   }
 }

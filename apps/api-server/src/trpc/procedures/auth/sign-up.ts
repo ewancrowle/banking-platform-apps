@@ -2,6 +2,7 @@ import { z } from "zod";
 import { publicProcedure } from "../../index";
 import accountService from "../../../clients/account";
 import oauthService from "../../../clients/oauth";
+import serverError from "../../../utils/server-error";
 
 const signUp = publicProcedure
   .input(
@@ -25,13 +26,17 @@ const signUp = publicProcedure
     }),
   )
   .mutation(async (opts) => {
-    await accountService.createAccount(opts.input);
-    return oauthService.token({
-      email: opts.input.email,
-      ipAddress: opts.ctx.ipAddress,
-      password: opts.input.password,
-      userAgent: opts.ctx.userAgent,
-    });
+    try {
+      await accountService.createAccount(opts.input);
+      return oauthService.token({
+        email: opts.input.email,
+        ipAddress: opts.ctx.ipAddress,
+        password: opts.input.password,
+        userAgent: opts.ctx.userAgent,
+      });
+    } catch (err) {
+      throw serverError(err);
+    }
   });
 
 export default signUp;

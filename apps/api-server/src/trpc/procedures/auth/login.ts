@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { publicProcedure } from "../../index";
 import oauthService from "../../../clients/oauth";
+import serverError from "../../../utils/server-error";
 
 const login = publicProcedure
   .input(
@@ -16,6 +17,12 @@ const login = publicProcedure
       refreshToken: z.string(),
     }),
   )
-  .mutation((opts) => oauthService.token(opts.input));
+  .mutation((opts) => {
+    try {
+      return oauthService.token(opts.input);
+    } catch (err) {
+      throw serverError(err);
+    }
+  });
 
 export default login;
