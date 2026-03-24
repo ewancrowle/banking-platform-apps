@@ -308,6 +308,7 @@ func main() {
 		pgdriver.WithDatabase(c.DBName),
 		pgdriver.WithUser(c.DBUsername),
 		pgdriver.WithPassword(c.DBPassword),
+		pgdriver.WithInsecure(true),
 	))
 
 	db := bun.NewDB(sqlDB, pgdialect.New())
