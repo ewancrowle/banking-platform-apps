@@ -20,7 +20,7 @@ jobs:
       - uses: bufbuild/buf-action@v1
         with:
           setup_only: true
-      - run: buf generate svcs/identity-svc --include-imports --template svcs/identity-svc/buf.gen.yaml --output svcs/identity-svc
+      - run: buf generate svcs/identity-svc --template svcs/identity-svc/buf.gen.yaml --output svcs/identity-svc
       - name: Build
         run: go build -v svcs/identity-svc/cmd/server/main.go
       - name: Login to GitHub Container Registry
