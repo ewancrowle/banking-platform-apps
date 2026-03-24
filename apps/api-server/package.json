@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@connectrpc/connect": "^2.1.1",
-    "@connectrpc/connect-web": "^2.1.1",
+    "@connectrpc/connect-node": "^2.1.1",
     "@t3-oss/env-core": "^0.13.11",
     "@trpc/server": "^11.15.0",
     "protos": "workspace:*",

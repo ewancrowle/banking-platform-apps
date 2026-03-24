@@ -1,5 +1,5 @@
 import { createClient, Interceptor } from "@connectrpc/connect";
-import { createConnectTransport } from "@connectrpc/connect-web";
+import { createConnectTransport } from "@connectrpc/connect-node";
 import { env } from "../utils/env";
 import { OAuthService } from "protos/oauth";
 
@@ -9,8 +9,9 @@ const logger: Interceptor = (next) => async (req) => {
 };
 
 const transport = createConnectTransport({
-  baseUrl: env.AUTH_SERVICE_URL,
-  interceptors: [logger],
+  httpVersion: "2",
+  baseUrl: env.ACCOUNT_SERVICE_URL,
+  interceptors: [logger]
 });
 
 const client = createClient(OAuthService, transport);
