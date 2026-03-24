@@ -19,9 +19,9 @@ jobs:
       - uses: bufbuild/buf-action@v1
         with:
           setup_only: true
-      - run: buf generate svcs/identity-svc --template svcs/identity-svc/buf.gen.yaml --output svcs/identity-svc
-      - run: buf generate svcs/account-svc --template svcs/account-svc/buf.gen.yaml --output svcs/account-svc
-      - run: buf generate svcs/oauth-svc --template svcs/oauth-svc/buf.gen.yaml --output svcs/oauth-svc
+      - run: buf generate svcs/identity-svc --include-imports --template svcs/identity-svc/buf.gen.yaml --output svcs/identity-svc
+      - run: buf generate svcs/account-svc --include-imports --template svcs/account-svc/buf.gen.yaml --output svcs/account-svc
+      - run: buf generate svcs/oauth-svc --include-imports --template svcs/oauth-svc/buf.gen.yaml --output svcs/oauth-svc
       - uses: oven-sh/setup-bun@v2
       - name: Install dependencies
         run: bun install
