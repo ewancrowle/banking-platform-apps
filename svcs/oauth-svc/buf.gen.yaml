@@ -11,9 +11,9 @@ plugins:
       - simple
   - remote: buf.build/bufbuild/es
     out: ../../pkgs/protos/gen/oauth
-    opt: target=ts
-  - remote: buf.build/connectrpc/query-es
-    out: ../../pkgs/protos/gen/oauth
+    opt:
+      - target=ts
+    include_imports: true
 inputs:
   - directory: proto
 managed:

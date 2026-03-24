@@ -12,8 +12,7 @@ plugins:
   - remote: buf.build/bufbuild/es
     out: ../../pkgs/protos/gen/account
     opt: target=ts
-  - remote: buf.build/connectrpc/query-es
-    out: ../../pkgs/protos/gen/account
+    include_imports: true
 inputs:
   - directory: proto
 managed:
