@@ -326,6 +326,22 @@ func main() {
 		c.AccountServiceAddr,
 	)
 
+	loggingInterceptor := connect.UnaryInterceptorFunc(
+		func(next connect.UnaryFunc) connect.UnaryFunc {
+			return func(ctx context.Context, request connect.AnyRequest) (connect.AnyResponse, error) {
+				fmt.Println("calling:", request.Spec().Procedure)
+				fmt.Println("request:", request.Any())
+				response, err := next(ctx, request)
+				if err != nil {
+					fmt.Println("error:", err)
+				} else {
+					fmt.Println("response:", response.Any())
+				}
+				return response, err
+			}
+		},
+	)
+
 	svc := service{
 		db:                    db,
 		identityServiceClient: identityServiceClient,
@@ -333,7 +349,7 @@ func main() {
 		jwtSecret:             c.JWTSecret,
 	}
 
-	path, handler := oauthv1connect.NewOAuthServiceHandler(svc, connect.WithInterceptors(validate.NewInterceptor()))
+	path, handler := oauthv1connect.NewOAuthServiceHandler(svc, connect.WithInterceptors(validate.NewInterceptor(), loggingInterceptor))
 
 	mux := http.NewServeMux()
 	mux.Handle(path, handler)
