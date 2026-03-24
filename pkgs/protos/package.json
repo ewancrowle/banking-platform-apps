@@ -1,10 +1,13 @@
 {
 	"name": "protos",
-	"exports": {
-		"./*": "./gen/*"
-	},
-	"type": "module",
 	"private": true,
+	"type": "module",
+	"exports": {
+		"./account": "./gen/account/account/v1/account_pb.ts",
+		"./oauth": "./gen/oauth/oauth/v1/oauth_pb.ts",
+		"./identity": "./gen/identity/identity/v1/identity_pb.ts",
+		"./*": "./gen/*.ts"
+	},
 	"devDependencies": {
 		"@types/bun": "latest"
 	},
