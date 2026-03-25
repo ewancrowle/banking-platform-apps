@@ -8,12 +8,12 @@ const signUp = publicProcedure
   .input(
     z.object({
       firstName: z.string(),
-      middleNames: z.string(),
+      middleNames: z.string().optional(),
       lastName: z.string(),
       email: z.email(),
       password: z.string().regex(/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$ %^&*-]).{8,}$/),
       line1: z.string(),
-      line2: z.string(),
+      line2: z.string().optional(),
       town: z.string(),
       postcode: z.string(),
     }),

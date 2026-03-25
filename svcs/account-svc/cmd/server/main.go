@@ -59,7 +59,7 @@ func (s service) CreateAccount(ctx context.Context, request *v1.CreateAccountReq
 	a := &account.Account{
 		ID:           id.Id,
 		FirstName:    request.FirstName,
-		MiddleNames:  request.MiddleNames,
+		MiddleNames:  request.GetMiddleNames(),
 		LastName:     request.LastName,
 		Email:        request.Email,
 		PasswordHash: hash,
@@ -109,6 +109,7 @@ func (s service) GetAccount(ctx context.Context, request *v1.GetAccountRequest) 
 	}
 
 	return &v1.GetAccountResponse{
+		Id:          a.ID,
 		FirstName:   a.FirstName,
 		MiddleNames: a.MiddleNames,
 		LastName:    a.LastName,
