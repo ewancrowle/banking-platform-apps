@@ -40,8 +40,8 @@ func (t *AccessToken) Insert(ctx context.Context, db *bun.DB) error {
 }
 
 func SelectAccessToken(ctx context.Context, db *bun.DB, id int64) (*AccessToken, error) {
-	t := new(AccessToken)
-	err := db.NewSelect().Model(t).Relation("Account").Where("id = ?", id).Scan(ctx)
+	t := &AccessToken{Token: Token{ID: id}}
+	err := db.NewSelect().Model(t).Relation("Account").WherePK().Scan(ctx)
 	return t, err
 }
 
