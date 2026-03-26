@@ -143,9 +143,8 @@ func main() {
 		pgdriver.WithInsecure(true),
 	))
 
-	db := bun.NewDB(sqlDB, pgdialect.New())
-	db.WithQueryHook(bundebug.NewQueryHook(
-		bundebug.WithEnabled(false),
+	db := bun.NewDB(sqlDB, pgdialect.New()).WithQueryHook(bundebug.NewQueryHook(
+		bundebug.WithEnabled(true),
 		bundebug.FromEnv(),
 	))
 
