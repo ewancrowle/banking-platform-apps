@@ -23,10 +23,7 @@ message CreateAccountRequest {
     min_len: 8,
     max_len: 254,
   }];
-  string line_1 = 6 [(buf.validate.field).string = {
-    min_len: 1,
-    max_len: 35,
-  }];
+  optional string line_1 = 6 [(buf.validate.field).string.max_len = 35];
   string line_2 = 7 [(buf.validate.field).string = {
     max_len: 35,
   }];

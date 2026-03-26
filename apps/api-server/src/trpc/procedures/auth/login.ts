@@ -19,7 +19,12 @@ const login = publicProcedure
   )
   .mutation(async (opts) => {
     try {
-      return await oauthService.token(opts.input);
+      return await oauthService.token({
+          email: opts.input.email,
+          ipAddress: opts.ctx.ipAddress,
+          password: opts.input.password,
+          userAgent: opts.ctx.userAgent,
+      });
     } catch (err) {
       throw serverError(err);
     }

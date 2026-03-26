@@ -12,7 +12,7 @@ type Account struct {
 
 	ID           int64  `bun:",pk"`
 	FirstName    string `bun:",notnull"`
-	MiddleNames  string `bun:",notnull"`
+	MiddleNames  string
 	LastName     string `bun:",notnull"`
 	Email        string `bun:",unique,notnull"`
 	PasswordHash string `bun:",notnull"`

@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"identity-svc/gen/identity/v1/identityv1connect"
 	"log"
+	"log/slog"
 	"net/http"
 	v1 "oauth-svc/gen/oauth/v1"
 	"oauth-svc/gen/oauth/v1/oauthv1connect"
@@ -62,10 +63,12 @@ func (s service) Token(ctx context.Context, request *v1.TokenRequest) (*v1.Token
 		Password: request.Password,
 	})
 	if err != nil {
+		slog.Error("error verifying credentials", "email", request.Email, "error", err)
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
 	if response.Id == nil {
+		slog.Info("incorrect email or password", "email", request.Email)
 		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("incorrect email or password"))
 	}
 
