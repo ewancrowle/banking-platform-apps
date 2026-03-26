@@ -18,8 +18,8 @@ type Token struct {
 	DeviceID *int64 `bun:"device_id,notnull"`
 	//Device   *device.Device `bun:"rel:belongs-to,join:device_id=id"`
 
-	CreatedAt time.Time `bun:"created_at,nullzero,notnull,default:current_timestamp"`
-	ExpiresAt time.Time `bun:"expires_at,nullzero,notnull"`
+	CreatedAt time.Time `bun:",nullzero,notnull,default:current_timestamp"`
+	ExpiresAt time.Time `bun:",nullzero,notnull"`
 }
 
 type AccessToken struct {

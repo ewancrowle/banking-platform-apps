@@ -18,7 +18,7 @@ type Device struct {
 	IPAddress string `bun:"ip_address,notnull"`
 	UserAgent string `bun:"user_agent,notnull"`
 
-	CreatedAt time.Time `bun:"created_at,nullzero,notnull,default:current_timestamp"`
+	CreatedAt time.Time `bun:",nullzero,notnull,default:current_timestamp"`
 }
 
 func (d *Device) Insert(ctx context.Context, db *bun.DB) error {
