@@ -3,6 +3,7 @@ package main
 import (
 	v1 "account-svc/gen/account/v1"
 	"account-svc/gen/account/v1/accountv1connect"
+	"account-svc/internal/accountnum"
 	"account-svc/pkg/model/account"
 	"context"
 	"database/sql"
@@ -53,6 +54,11 @@ func (s service) CreateAccount(ctx context.Context, request *v1.CreateAccountReq
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
+	num, err := accountnum.GenerateAccountNumber()
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
 	hash, err := argon2id.CreateHash(request.Password, argon2id.DefaultParams)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -60,6 +66,7 @@ func (s service) CreateAccount(ctx context.Context, request *v1.CreateAccountReq
 
 	a := &account.Account{
 		ID:           id.Id,
+		AccountNum:   num,
 		FirstName:    request.FirstName,
 		MiddleNames:  request.GetMiddleNames(),
 		LastName:     request.LastName,
@@ -116,6 +123,7 @@ func (s service) GetAccount(ctx context.Context, request *v1.GetAccountRequest) 
 
 	return &v1.GetAccountResponse{
 		Id:          a.ID,
+		AccountNum:  a.AccountNum,
 		FirstName:   a.FirstName,
 		MiddleNames: a.MiddleNames,
 		LastName:    a.LastName,

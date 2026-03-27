@@ -11,6 +11,7 @@ type Account struct {
 	bun.BaseModel `bun:"table:accounts"`
 
 	ID           int64  `bun:",pk"`
+	AccountNum   string `bun:",unique,notnull"`
 	FirstName    string `bun:",notnull"`
 	MiddleNames  string
 	LastName     string `bun:",notnull"`

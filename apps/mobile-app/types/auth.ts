@@ -1,5 +1,6 @@
 export type Account = {
 	id: bigint;
+	accountNum: string;
 	firstName: string;
 	middleNames: string;
 	lastName: string;

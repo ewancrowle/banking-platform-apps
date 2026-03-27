@@ -63,15 +63,16 @@ message GetAccountRequest {
 
 message GetAccountResponse {
   int64 id = 1;
-  string first_name = 2;
-  string middle_names = 3;
-  string last_name = 4;
-  string email = 5;
-  string line_1 = 6;
-  string line_2 = 7;
-  string town = 8;
-  string postcode = 9;
-  string created_at = 10;
+  string account_num = 2;
+  string first_name = 3;
+  string middle_names = 4;
+  string last_name = 5;
+  string email = 6;
+  string line_1 = 7;
+  string line_2 = 8;
+  string town = 9;
+  string postcode = 10;
+  string created_at = 11;
 }
 
 service AccountService {
