@@ -273,7 +273,7 @@ func (s service) Introspect(ctx context.Context, request *v1.IntrospectRequest) 
 	}
 
 	if !t.Valid {
-		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("access t is invalid"))
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("access token is invalid"))
 	}
 
 	accessTokenID, err := strconv.ParseInt(claims.ID, 10, 64)
