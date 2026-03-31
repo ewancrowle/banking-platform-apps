@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+package merchant.v1;
+
+import "buf/validate/validate.proto";
+
+message CreateMerchantRequest {
+  string descriptor = 1 [(buf.validate.field).string = {
+    min_len: 1,
+    max_len: 25,
+  }];
+  string short_descriptor = 2 [(buf.validate.field).string = {
+    min_len: 1,
+    max_len: 15,
+  }];
+  string mcc = 3 [(buf.validate.field).string = {
+    min_len: 4,
+    max_len: 4,
+  }];
+  string line_1 = 4 [(buf.validate.field).string = {
+    min_len: 1,
+    max_len: 35,
+  }];
+  optional string line_2 = 5 [(buf.validate.field).string.max_len = 35];
+  string town = 6 [(buf.validate.field).string = {
+    min_len: 1,
+    max_len: 35,
+  }];
+  string postcode = 7 [(buf.validate.field).string = {
+    min_len: 5,
+    max_len: 8,
+  }];
+  string country_code = 8 [(buf.validate.field).string = {
+    min_len: 2,
+    max_len: 2,
+  }];
+}
+
+message CreateMerchantResponse {
+  int64 id = 1;
+}
+
+message GetMerchantRequest {
+  int64 id = 1;
+}
+
+message GetMerchantResponse {
+  int64 id = 1;
+  string descriptor = 2;
+  string short_descriptor = 3;
+  string mcc = 4;
+  string line_1 = 5;
+  string line_2 = 6;
+  string town = 7;
+  string postcode = 8;
+  string country_code = 9;
+  string created_at = 10;
+  string updated_at = 11;
+}
+
+service MerchantService {
+  rpc CreateMerchant(CreateMerchantRequest) returns (CreateMerchantResponse);
+  rpc GetMerchant(GetMerchantRequest) returns (GetMerchantResponse);
+}

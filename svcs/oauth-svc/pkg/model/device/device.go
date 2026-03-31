@@ -12,11 +12,11 @@ type Device struct {
 
 	ID int64 `bun:",pk"`
 
-	AccountID *int64 `bun:"account_id,notnull"`
+	AccountID *int64 `bun:",notnull"`
 	//Account   *account.Account `bun:"rel:belongs-to,join:account_id=id"`
 
-	IPAddress string `bun:"ip_address,notnull"`
-	UserAgent string `bun:"user_agent,notnull"`
+	IPAddress string `bun:",notnull"`
+	UserAgent string `bun:",notnull"`
 
 	CreatedAt time.Time `bun:",nullzero,notnull,default:current_timestamp"`
 }

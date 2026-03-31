@@ -10,9 +10,9 @@ import (
 
 type Token struct {
 	ID        int64 `bun:",pk"`
-	IsRevoked bool  `bun:"is_revoked,notnull"`
+	IsRevoked bool  `bun:",notnull"`
 
-	AccountID *int64           `bun:"account_id,notnull"`
+	AccountID *int64           `bun:",notnull"`
 	Account   *account.Account `bun:"rel:belongs-to,join:account_id=id"`
 
 	DeviceID *int64 `bun:"device_id,notnull"`

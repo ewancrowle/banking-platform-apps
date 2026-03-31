@@ -10,12 +10,16 @@ plugins:
       - paths=source_relative
       - simple
   - remote: buf.build/bufbuild/es
-    out: ../../pkgs/protos/gen/identity
+    out: ../../pkgs/protos/gen/merchant
     opt: target=ts
+    include_imports: true
 inputs:
   - directory: proto
 managed:
   enabled: true
   override:
     - file_option: go_package_prefix
-      value: identity-svc/gen
+      value: merchant-svc/gen
+  disable:
+    - file_option: go_package
+      module: buf.build/bufbuild/protovalidate

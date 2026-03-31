@@ -4,5 +4,7 @@ use (
 	./apps/migrations-tool
 	./svcs/account-svc
 	./svcs/identity-svc
+	./svcs/merchant-svc
 	./svcs/oauth-svc
+	./svcs/payment-svc
 )

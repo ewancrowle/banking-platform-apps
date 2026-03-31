@@ -1,0 +1,235 @@
+package main
+
+import (
+	accountv1 "account-svc/gen/account/v1"
+	"account-svc/gen/account/v1/accountv1connect"
+	"context"
+	"database/sql"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"identity-svc/gen/identity/v1/identityv1connect"
+	"log"
+	merchantv1 "merchant-svc/gen/merchant/v1"
+	"merchant-svc/gen/merchant/v1/merchantv1connect"
+	"net/http"
+	v1 "payment-svc/gen/payment/v1"
+	"payment-svc/gen/payment/v1/paymentv1connect"
+	"payment-svc/pkg/model/payment"
+	"strings"
+	"time"
+
+	"connectrpc.com/connect"
+	"connectrpc.com/validate"
+	"github.com/kelseyhightower/envconfig"
+	"github.com/moov-io/iso4217"
+	"github.com/twmb/franz-go/pkg/kgo"
+	"github.com/uptrace/bun"
+	"github.com/uptrace/bun/dialect/pgdialect"
+	"github.com/uptrace/bun/driver/pgdriver"
+	"github.com/uptrace/bun/extra/bundebug"
+	"google.golang.org/protobuf/types/known/emptypb"
+)
+
+type config struct {
+	Port                int      `default:"8080"`
+	IdentityServiceAddr string   `required:"true" split_words:"true"`
+	AccountServiceAddr  string   `required:"true" split_words:"true"`
+	MerchantServiceAddr string   `required:"true" split_words:"true"`
+	DBHost              string   `envconfig:"db_host" required:"true"`
+	DBName              string   `envconfig:"db_name" required:"true"`
+	DBUsername          string   `envconfig:"db_username" required:"true"`
+	DBPassword          string   `envconfig:"db_password" required:"true"`
+	KafkaBrokers        []string `required:"true" split_words:"true"`
+}
+
+type service struct {
+	paymentv1connect.PaymentServiceHandler
+	db                    *bun.DB
+	kafkaCl               *kgo.Client
+	identityServiceClient identityv1connect.IdentityServiceClient
+	accountServiceClient  accountv1connect.AccountServiceClient
+	merchantServiceClient merchantv1connect.MerchantServiceClient
+}
+
+func (s service) CreatePayment(ctx context.Context, request *v1.CreatePaymentRequest) (*v1.CreatePaymentResponse, error) {
+	if request.Amount == 0 {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("amount cannot be zero"))
+	}
+
+	if cc, exists := iso4217.Lookup(strings.ToUpper(request.CurrencyCode)); !exists {
+		return nil, connect.NewError(connect.CodeNotFound, errors.New("invalid currency code"))
+	} else if cc != iso4217.GBP {
+		//TODO FX
+		return nil, connect.NewError(connect.CodeUnimplemented, errors.New("unsupported currency"))
+	}
+
+	paymentType, err := payment.GetType(request.Type)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+
+	if _, err := s.accountServiceClient.GetAccount(ctx, &accountv1.GetAccountRequest{
+		Id: request.AccountId,
+	}); err != nil {
+		return nil, connect.NewError(connect.CodeNotFound, errors.New("account not found"))
+	}
+
+	if paymentType == payment.TypeCard {
+		if request.MerchantId == nil {
+			return nil, connect.NewError(connect.CodeUnimplemented, errors.New("merchant id is required"))
+		}
+
+		if _, err := s.merchantServiceClient.GetMerchant(ctx, &merchantv1.GetMerchantRequest{Id: request.GetMerchantId()}); err != nil {
+			return nil, connect.NewError(connect.CodeNotFound, errors.New("merchant not found"))
+		}
+	}
+
+	correctedAmount := paymentType.GetCorrectDirection(request.Amount)
+
+	if paymentType == payment.TypeAccountToAccount {
+		if request.OtherAccountId == nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("other account id is required"))
+		}
+
+		if request.AccountId == request.GetOtherAccountId() {
+			return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("both account ids cannot be the same"))
+		}
+
+		if _, err := s.accountServiceClient.GetAccount(ctx, &accountv1.GetAccountRequest{
+			Id: request.GetOtherAccountId(),
+		}); err != nil {
+			return nil, connect.NewError(connect.CodeNotFound, errors.New("other account not found"))
+		}
+	}
+
+	id, err := s.identityServiceClient.ID(ctx, &emptypb.Empty{})
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	p := payment.Payment{
+		ID:             id.Id,
+		AccountID:      request.AccountId,
+		MerchantID:     request.MerchantId,
+		OtherAccountID: request.OtherAccountId,
+		Amount:         correctedAmount,
+		CurrencyCode:   request.CurrencyCode,
+		Description:    request.Description,
+		Type:           paymentType,
+		Status:         payment.StatusReceived,
+		CreatedAt:      time.Now(),
+	}
+
+	if err = p.Insert(ctx, s.db); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	b, err := json.Marshal(p)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	if err := s.kafkaCl.ProduceSync(ctx, &kgo.Record{
+		Value: b,
+		Topic: "payments",
+	}).FirstErr(); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	return &v1.CreatePaymentResponse{Id: id.Id}, nil
+}
+
+func (s service) AuthorisePayment(ctx context.Context, request *v1.AuthorisePaymentRequest) (*emptypb.Empty, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (s service) IncrementPayment(ctx context.Context, request *v1.IncrementPaymentRequest) (*emptypb.Empty, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (s service) CapturePayment(ctx context.Context, request *v1.CapturePaymentRequest) (*emptypb.Empty, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (s service) ExpirePayment(ctx context.Context, request *v1.ExpirePaymentRequest) (*emptypb.Empty, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (s service) VoidPayment(ctx context.Context, request *v1.VoidPaymentRequest) (*emptypb.Empty, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func main() {
+	var c config
+	err := envconfig.Process("", &c)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	sqlDB := sql.OpenDB(pgdriver.NewConnector(
+		pgdriver.WithAddr(c.DBHost),
+		pgdriver.WithDatabase(c.DBName),
+		pgdriver.WithUser(c.DBUsername),
+		pgdriver.WithPassword(c.DBPassword),
+		pgdriver.WithInsecure(true),
+	))
+
+	db := bun.NewDB(sqlDB, pgdialect.New()).WithQueryHook(bundebug.NewQueryHook(
+		bundebug.WithEnabled(true),
+		bundebug.FromEnv(),
+	))
+
+	kafkaCl, err := kgo.NewClient(kgo.SeedBrokers(c.KafkaBrokers...))
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	identityServiceClient := identityv1connect.NewIdentityServiceClient(
+		http.DefaultClient,
+		c.IdentityServiceAddr,
+	)
+
+	accountServiceClient := accountv1connect.NewAccountServiceClient(
+		http.DefaultClient,
+		c.AccountServiceAddr,
+	)
+
+	merchantServiceClient := merchantv1connect.NewMerchantServiceClient(
+		http.DefaultClient,
+		c.MerchantServiceAddr,
+	)
+
+	svc := service{
+		db:                    db,
+		kafkaCl:               kafkaCl,
+		identityServiceClient: identityServiceClient,
+		accountServiceClient:  accountServiceClient,
+		merchantServiceClient: merchantServiceClient,
+	}
+
+	path, handler := paymentv1connect.NewPaymentServiceHandler(svc, connect.WithInterceptors(validate.NewInterceptor()))
+
+	mux := http.NewServeMux()
+	mux.Handle(path, handler)
+
+	p := new(http.Protocols)
+	p.SetHTTP1(true)
+	// Use h2c so we can serve HTTP/2 without TLS.
+	p.SetUnencryptedHTTP2(true)
+	s := http.Server{
+		Addr:      fmt.Sprintf(":%d", c.Port),
+		Handler:   mux,
+		Protocols: p,
+	}
+
+	err = s.ListenAndServe()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+}

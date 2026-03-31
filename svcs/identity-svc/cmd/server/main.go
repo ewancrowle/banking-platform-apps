@@ -8,8 +8,6 @@ import (
 	"log"
 	"net/http"
 
-	"connectrpc.com/connect"
-	"connectrpc.com/validate"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/sony/sonyflake/v2"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -49,7 +47,7 @@ func main() {
 
 	svc := service{sf: sf}
 
-	path, handler := identityv1connect.NewIdentityServiceHandler(svc, connect.WithInterceptors(validate.NewInterceptor()))
+	path, handler := identityv1connect.NewIdentityServiceHandler(svc)
 
 	mux := http.NewServeMux()
 	mux.Handle(path, handler)

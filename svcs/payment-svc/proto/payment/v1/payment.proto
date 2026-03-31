@@ -1,0 +1,102 @@
+syntax = "proto3";
+
+package payment.v1;
+
+import "google/protobuf/empty.proto";
+
+import "buf/validate/validate.proto";
+
+message CreatePaymentRequest {
+  int64 account_id = 1;
+  optional int64 payment_id = 2;
+  optional int64 merchant_id = 3;
+  optional int64 other_account_id = 4;
+  int64 amount = 5;
+  string currency_code = 6 [(buf.validate.field).string = {
+    min_len: 3,
+    max_len: 3,
+  }];
+  string description = 7 [(buf.validate.field).string = {
+    min_len: 1,
+    max_len: 25,
+  }];
+  string type = 8 [(buf.validate.field).string = {
+    min_len: 1,
+    max_len: 25,
+  }];
+}
+
+message CreatePaymentResponse {
+  int64 id = 1;
+}
+
+message AuthorisePaymentRequest {
+  int64 payment_id = 1;
+}
+
+message IncrementPaymentRequest {
+  int64 payment_id = 1;
+  int64 replacement_amount = 2;
+}
+
+message CapturePaymentRequest {
+  int64 payment_id = 1;
+  optional int64 replacement_amount = 2;
+}
+
+message ExpirePaymentRequest {
+  int64 payment_id = 1;
+}
+
+message VoidPaymentRequest {
+  int64 payment_id = 1;
+}
+
+message GetPaymentsRequest {
+  int64 account_id = 1;
+}
+
+
+message ForeignExchangeData {
+  int64 local_amount = 1;
+  string local_currency_code = 2;
+  string exchange_rate = 3;
+  string exchange_rate_provider = 4;
+  string exchange_rate_at = 5;
+}
+
+message OtherAccountData {
+  string first_name = 1;
+  optional string middle_names = 2;
+  string last_name = 3;
+}
+
+message Payment {
+  int64 id = 1;
+  int64 account_id = 2;
+  optional int64 payment_id = 3;
+  repeated Payment payments = 4;
+  optional int64 merchant_id = 5;
+  optional int64 other_account_id = 6;
+  optional OtherAccountData other_account_data = 7;
+  int64 amount = 8;
+  string currency_code = 9;
+  string description = 10;
+  string type = 11;
+  string status = 12;
+  optional ForeignExchangeData foreign_exchange_data = 13;
+  string created_at = 14;
+}
+
+message GetPaymentsResponse {
+  repeated Payment payments = 1;
+}
+
+service PaymentService {
+  rpc CreatePayment(CreatePaymentRequest) returns (CreatePaymentResponse);
+  rpc AuthorisePayment(AuthorisePaymentRequest) returns (google.protobuf.Empty);
+  rpc IncrementPayment(IncrementPaymentRequest) returns (google.protobuf.Empty);
+  rpc CapturePayment(CapturePaymentRequest) returns (google.protobuf.Empty);
+  rpc ExpirePayment(ExpirePaymentRequest) returns (google.protobuf.Empty);
+  rpc VoidPayment(VoidPaymentRequest) returns (google.protobuf.Empty);
+}
