@@ -8,7 +8,7 @@ COPY apps/api-server/package.json ./apps/api-server/
 COPY pkgs/protos/package.json ./pkgs/protos/
 
 # Install only production dependencies
-RUN rm bun.lock && bun install --production
+RUN rm bun.lock && bun install
 
 # Release stage
 FROM oven/bun:1 AS release
