@@ -64,26 +64,26 @@ func (t Type) GetCorrectDirection(v int64) int64 {
 
 type Payment struct {
 	bun.BaseModel `bun:"table:payments"`
-	ID            int64 `bun:",pk"`
-	AccountID     int64 `bun:",notnull"`
+	ID            int64 `bun:",pk" json:"id"`
+	AccountID     int64 `bun:",notnull" json:"account_id"`
 
-	PaymentID *int64
+	PaymentID *int64 `json:"payment_id"`
 	Payments  []Payment `bun:"rel:has-many,join:id=payment_id" json:"-"`
 
-	MerchantID *int64
+	MerchantID *int64 `json:"merchant_id"`
 	Merchant   *merchant.Merchant `bun:"rel:has-one,join:merchant_id=id" json:"-"`
 
-	OtherAccountID *int64
+	OtherAccountID *int64 `json:"other_account_id"`
 	OtherAccount   account.Account `bun:"rel:has-one,join:other_account_id=id" json:"-"`
 
-	Amount       int64  `bun:",notnull"`
-	CurrencyCode string `bun:",notnull"`
+	Amount       int64  `bun:",notnull" json:"amount"`
+	CurrencyCode string `bun:",notnull" json:"currency_code"`
 
-	Type        Type   `bun:",notnull"`
-	Status      Status `bun:",notnull"`
-	Description string `bun:",notnull"`
+	Type        Type   `bun:",notnull" json:"type"`
+	Status      Status `bun:",notnull" json:"status"`
+	Description string `bun:",notnull" json:"description"`
 
-	CreatedAt time.Time `bun:",nullzero,notnull,default:current_timestamp"`
+	CreatedAt time.Time `bun:",nullzero,notnull,default:current_timestamp" json:"created_at"`
 }
 
 func (p *Payment) Insert(ctx context.Context, db *bun.DB) error {
