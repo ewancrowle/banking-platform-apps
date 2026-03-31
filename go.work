@@ -1,6 +1,7 @@
 go 1.26.1
 
 use (
+	./apps/ch-migrations-tool
 	./apps/migrations-tool
 	./svcs/account-svc
 	./svcs/identity-svc
