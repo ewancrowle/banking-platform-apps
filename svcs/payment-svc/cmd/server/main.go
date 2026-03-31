@@ -141,8 +141,37 @@ func (s service) CreatePayment(ctx context.Context, request *v1.CreatePaymentReq
 }
 
 func (s service) AuthorisePayment(ctx context.Context, request *v1.AuthorisePaymentRequest) (*emptypb.Empty, error) {
-	//TODO implement me
-	panic("implement me")
+	p, err := payment.Select(ctx, s.db, request.PaymentId)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, connect.NewError(connect.CodeNotFound, errors.New("payment not found"))
+		}
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	if p.Status != payment.StatusReceived {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("payment is not received"))
+	}
+
+	p.Status = payment.StatusAuthorised
+
+	if err = p.SetStatus(ctx, s.db, payment.StatusAuthorised); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	b, err := json.Marshal(p)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	if err := s.kafkaCl.ProduceSync(ctx, &kgo.Record{
+		Value: b,
+		Topic: "payments",
+	}).FirstErr(); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	return &emptypb.Empty{}, nil
 }
 
 func (s service) IncrementPayment(ctx context.Context, request *v1.IncrementPaymentRequest) (*emptypb.Empty, error) {

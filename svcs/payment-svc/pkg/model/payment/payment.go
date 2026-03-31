@@ -67,13 +67,13 @@ type Payment struct {
 	ID            int64 `bun:",pk" json:"id"`
 	AccountID     int64 `bun:",notnull" json:"account_id"`
 
-	PaymentID *int64 `json:"payment_id"`
+	PaymentID *int64    `json:"payment_id"`
 	Payments  []Payment `bun:"rel:has-many,join:id=payment_id" json:"-"`
 
-	MerchantID *int64 `json:"merchant_id"`
+	MerchantID *int64             `json:"merchant_id"`
 	Merchant   *merchant.Merchant `bun:"rel:has-one,join:merchant_id=id" json:"-"`
 
-	OtherAccountID *int64 `json:"other_account_id"`
+	OtherAccountID *int64          `json:"other_account_id"`
 	OtherAccount   account.Account `bun:"rel:has-one,join:other_account_id=id" json:"-"`
 
 	Amount       int64  `bun:",notnull" json:"amount"`
@@ -95,4 +95,9 @@ func Select(ctx context.Context, db *bun.DB, id int64) (*Payment, error) {
 	p := new(Payment)
 	err := db.NewSelect().Model(p).Where("id = ?", id).Scan(ctx)
 	return p, err
+}
+
+func (p *Payment) SetStatus(ctx context.Context, db *bun.DB, status Status) error {
+	_, err := db.NewUpdate().Model(p).Set("status = ?", status).WherePK().Exec(ctx)
+	return err
 }
