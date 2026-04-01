@@ -8,4 +8,5 @@ use (
 	./svcs/merchant-svc
 	./svcs/oauth-svc
 	./svcs/payment-svc
+	./svcs/payment-decision-svc
 )

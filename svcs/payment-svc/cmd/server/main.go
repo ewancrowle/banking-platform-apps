@@ -13,6 +13,8 @@ import (
 	merchantv1 "merchant-svc/gen/merchant/v1"
 	"merchant-svc/gen/merchant/v1/merchantv1connect"
 	"net/http"
+	paymentdecisionv1 "payment-decision-svc/gen/payment_decision/v1"
+	"payment-decision-svc/gen/payment_decision/v1/payment_decisionv1connect"
 	v1 "payment-svc/gen/payment/v1"
 	"payment-svc/gen/payment/v1/paymentv1connect"
 	"payment-svc/pkg/model/payment"
@@ -32,15 +34,16 @@ import (
 )
 
 type config struct {
-	Port                int      `default:"8080"`
-	IdentityServiceAddr string   `required:"true" split_words:"true"`
-	AccountServiceAddr  string   `required:"true" split_words:"true"`
-	MerchantServiceAddr string   `required:"true" split_words:"true"`
-	DBHost              string   `envconfig:"db_host" required:"true"`
-	DBName              string   `envconfig:"db_name" required:"true"`
-	DBUsername          string   `envconfig:"db_username" required:"true"`
-	DBPassword          string   `envconfig:"db_password" required:"true"`
-	KafkaBrokers        []string `required:"true" split_words:"true"`
+	Port                       int      `default:"8080"`
+	IdentityServiceAddr        string   `required:"true" split_words:"true"`
+	AccountServiceAddr         string   `required:"true" split_words:"true"`
+	MerchantServiceAddr        string   `required:"true" split_words:"true"`
+	PaymentDecisionServiceAddr string   `required:"true" split_words:"true"`
+	DBHost                     string   `envconfig:"db_host" required:"true"`
+	DBName                     string   `envconfig:"db_name" required:"true"`
+	DBUsername                 string   `envconfig:"db_username" required:"true"`
+	DBPassword                 string   `envconfig:"db_password" required:"true"`
+	KafkaBrokers               []string `required:"true" split_words:"true"`
 }
 
 type service struct {
@@ -50,9 +53,10 @@ type service struct {
 	identityServiceClient identityv1connect.IdentityServiceClient
 	accountServiceClient  accountv1connect.AccountServiceClient
 	merchantServiceClient merchantv1connect.MerchantServiceClient
+	paymentDecisionClient payment_decisionv1connect.PaymentDecisionServiceClient
 }
 
-func (s service) CreatePayment(ctx context.Context, request *v1.CreatePaymentRequest) (*v1.CreatePaymentResponse, error) {
+func (s service) AuthorisePayment(ctx context.Context, request *v1.AuthorisePaymentRequest) (*v1.AuthorisePaymentResponse, error) {
 	if request.Amount == 0 {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("amount cannot be zero"))
 	}
@@ -137,20 +141,26 @@ func (s service) CreatePayment(ctx context.Context, request *v1.CreatePaymentReq
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	return &v1.CreatePaymentResponse{Id: id.Id}, nil
-}
-
-func (s service) AuthorisePayment(ctx context.Context, request *v1.AuthorisePaymentRequest) (*emptypb.Empty, error) {
-	p, err := payment.Select(ctx, s.db, request.PaymentId)
+	d, err := s.paymentDecisionClient.DecidePayment(ctx, &paymentdecisionv1.DecidePaymentRequest{
+		PaymentId:      id.Id,
+		AccountId:      request.AccountId,
+		MerchantId:     request.MerchantId,
+		OtherAccountId: request.OtherAccountId,
+		Amount:         correctedAmount,
+		CurrencyCode:   request.CurrencyCode,
+		Description:    request.Description,
+		Type:           request.Type,
+	})
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, connect.NewError(connect.CodeNotFound, errors.New("payment not found"))
-		}
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	if p.Status != payment.StatusReceived {
-		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("payment is not received"))
+	if d.Decision == paymentdecisionv1.Decision_DECLINED {
+		return &v1.AuthorisePaymentResponse{
+			PaymentId:  id.Id,
+			Decision:   v1.Decision_DECLINED,
+			DecisionId: d.DecisionId,
+		}, nil
 	}
 
 	p.Status = payment.StatusAuthorised
@@ -159,7 +169,7 @@ func (s service) AuthorisePayment(ctx context.Context, request *v1.AuthorisePaym
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	b, err := json.Marshal(p)
+	b, err = json.Marshal(p)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -171,7 +181,11 @@ func (s service) AuthorisePayment(ctx context.Context, request *v1.AuthorisePaym
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	return &emptypb.Empty{}, nil
+	return &v1.AuthorisePaymentResponse{
+		PaymentId:  id.Id,
+		Decision:   v1.Decision_APPROVED,
+		DecisionId: d.DecisionId,
+	}, nil
 }
 
 func (s service) IncrementPayment(ctx context.Context, request *v1.IncrementPaymentRequest) (*emptypb.Empty, error) {

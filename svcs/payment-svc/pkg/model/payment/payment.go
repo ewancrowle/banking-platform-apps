@@ -17,6 +17,7 @@ type (
 
 const (
 	StatusReceived       Status = "received"
+	StatusDeclined       Status = "declined"
 	StatusAuthorised     Status = "authorised"
 	StatusIncremented    Status = "incremented"
 	StatusCaptured       Status = "captured"

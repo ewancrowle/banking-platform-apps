@@ -5,7 +5,8 @@
 	"exports": {
 		"./account": "./gen/account/account/v1/account_pb.ts",
 		"./oauth": "./gen/oauth/oauth/v1/oauth_pb.ts",
-		"./identity": "./gen/identity/identity/v1/identity_pb.ts",
+		"./payment": "./gen/payment/payment/v1/payment_pb.ts",
+		"./merchant": "./gen/merchant/merchant/v1/merchant_pb.ts",
 		"./*": "./gen/*.ts"
 	},
 	"devDependencies": {

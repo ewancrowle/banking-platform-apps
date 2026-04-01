@@ -47,6 +47,8 @@ export default function RootLayout() {
 							await setTokens(tokens);
 							account = await getAccount();
 						}
+
+						await reset();
 					}
 
 					if (account) {

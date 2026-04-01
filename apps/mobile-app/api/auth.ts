@@ -25,7 +25,7 @@ export const getAccount = async () => {
 	try {
 		return await trpc.account.getAccount.query();
 	} catch (error) {
-		console.error(error)
+		console.log(error);
 		return null;
 	}
 };

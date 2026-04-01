@@ -47,12 +47,7 @@ import (
 )
 
 func main() {
-	dsn := os.Getenv("DB_ADDR")
-	if dsn == "" {
-		log.Fatal("DB_ADDR env var is not set")
-	}
-
-	sqldb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(dsn)))
+	sqldb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(os.Getenv("DSN"))))
 
 	db := bun.NewDB(sqldb, pgdialect.New())
 	db.WithQueryHook(bundebug.NewQueryHook(

@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package payment_decision.v1;
+
+import "buf/validate/validate.proto";
+
+message DecidePaymentRequest {
+  int64 payment_id = 1;
+  int64 account_id = 2;
+  optional int64 merchant_id = 3;
+  optional int64 other_account_id = 4;
+  int64 amount = 5;
+  string currency_code = 6 [(buf.validate.field).string = {
+    min_len: 3,
+    max_len: 3,
+  }];
+  string description = 7 [(buf.validate.field).string = {
+    min_len: 1,
+    max_len: 25,
+  }];
+  string type = 8 [(buf.validate.field).string = {
+    min_len: 1,
+    max_len: 25,
+  }];
+}
+
+enum Decision {
+  DECLINED = 0;
+  APPROVED = 1;
+}
+
+message DecidePaymentResponse {
+  Decision decision = 1;
+  int64 decision_id = 2;
+}
+
+service PaymentDecisionService {
+  rpc DecidePayment (DecidePaymentRequest) returns (DecidePaymentResponse);
+}

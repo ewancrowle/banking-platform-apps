@@ -44,12 +44,7 @@ import (
 )
 
 func main() {
-	dsn := os.Getenv("CH_ADDR")
-	if dsn == "" {
-		log.Fatal("CH_ADDR env var is not set")
-	}
-
-	db := ch.Connect(ch.WithDSN(dsn))
+	db := ch.Connect(ch.WithDSN("clickhouse://localhost:9000/?sslmode=disable"))
 	db.AddQueryHook(chdebug.NewQueryHook(
 		chdebug.WithEnabled(false),
 		chdebug.FromEnv(),

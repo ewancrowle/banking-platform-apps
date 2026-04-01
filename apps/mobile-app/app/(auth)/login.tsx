@@ -53,7 +53,7 @@ export default function LoginScreen() {
                     form.reset();
                     return;
                 }
-                console.error(err);
+                console.log(err);
                 Alert.alert("An error occurred. Please try again later.");
             }
         },
