@@ -30,7 +30,6 @@ type config struct {
 	DBName              string `envconfig:"db_name" required:"true"`
 	DBUsername          string `envconfig:"db_username" required:"true"`
 	DBPassword          string `envconfig:"db_password" required:"true"`
-	//ClickHouseURL       string `envconfig:"clickhouse_url" required:"true"`
 }
 
 type service struct {
