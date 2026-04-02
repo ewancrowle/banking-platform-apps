@@ -1,7 +1,6 @@
 package main
 
 import (
-	"account-svc/gen/account/v1/accountv1connect"
 	"context"
 	"database/sql"
 	"fmt"
@@ -38,7 +37,6 @@ type service struct {
 	payment_decisionv1connect.PaymentDecisionServiceHandler
 	db                    *bun.DB
 	identityServiceClient identityv1connect.IdentityServiceClient
-	accountServiceClient  accountv1connect.AccountServiceClient
 	ledgerServiceClient   ledgerv1connect.LedgerServiceClient
 }
 
