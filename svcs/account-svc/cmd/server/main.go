@@ -19,6 +19,7 @@ import (
 	"connectrpc.com/validate"
 	"github.com/alexedwards/argon2id"
 	"github.com/kelseyhightower/envconfig"
+	"github.com/moov-io/iso4217"
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/pgdialect"
 	"github.com/uptrace/bun/driver/pgdriver"
@@ -76,6 +77,8 @@ func (s service) CreateAccount(ctx context.Context, request *v1.CreateAccountReq
 		Line2:        request.Line_2,
 		Town:         request.Town,
 		Postcode:     request.Postcode,
+		IsFrozen:     false,
+		CurrencyCode: iso4217.GBP.Code,
 	}
 
 	if err := a.Insert(ctx, s.db); err != nil {
@@ -122,17 +125,19 @@ func (s service) GetAccount(ctx context.Context, request *v1.GetAccountRequest) 
 	}
 
 	return &v1.GetAccountResponse{
-		Id:          a.ID,
-		AccountNum:  a.AccountNum,
-		FirstName:   a.FirstName,
-		MiddleNames: a.MiddleNames,
-		LastName:    a.LastName,
-		Email:       a.Email,
-		Line_1:      a.Line1,
-		Line_2:      a.Line2,
-		Town:        a.Town,
-		Postcode:    a.Postcode,
-		CreatedAt:   a.CreatedAt.String(),
+		Id:           a.ID,
+		AccountNum:   a.AccountNum,
+		FirstName:    a.FirstName,
+		MiddleNames:  a.MiddleNames,
+		LastName:     a.LastName,
+		Email:        a.Email,
+		Line_1:       a.Line1,
+		Line_2:       a.Line2,
+		Town:         a.Town,
+		Postcode:     a.Postcode,
+		IsFrozen:     a.IsFrozen,
+		CurrencyCode: a.CurrencyCode,
+		CreatedAt:    a.CreatedAt.String(),
 	}, nil
 }
 

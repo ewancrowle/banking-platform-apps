@@ -5,8 +5,9 @@ use (
 	./apps/migrations-tool
 	./svcs/account-svc
 	./svcs/identity-svc
+	./svcs/ledger-svc
 	./svcs/merchant-svc
 	./svcs/oauth-svc
-	./svcs/payment-svc
 	./svcs/payment-decision-svc
+	./svcs/payment-svc
 )

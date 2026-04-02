@@ -8,6 +8,7 @@ require (
 	connectrpc.com/validate v0.6.0
 	github.com/alexedwards/argon2id v1.0.0
 	github.com/kelseyhightower/envconfig v1.4.0
+	github.com/moov-io/iso4217 v0.3.2
 	github.com/uptrace/bun v1.2.18
 	github.com/uptrace/bun/dialect/pgdialect v1.2.18
 	github.com/uptrace/bun/driver/pgdriver v1.2.18

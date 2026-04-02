@@ -1,10 +1,13 @@
 package main
 
 import (
+	"account-svc/gen/account/v1/accountv1connect"
 	"context"
 	"database/sql"
 	"fmt"
 	"identity-svc/gen/identity/v1/identityv1connect"
+	ledgerv1 "ledger-svc/gen/ledger/v1"
+	"ledger-svc/gen/ledger/v1/ledgerv1connect"
 	"log"
 	"net/http"
 	v1 "payment-decision-svc/gen/payment_decision/v1"
@@ -23,6 +26,7 @@ import (
 type config struct {
 	Port                int    `default:"8080"`
 	IdentityServiceAddr string `required:"true" split_words:"true"`
+	LedgerServiceAddr   string `required:"true" split_words:"true"`
 	DBHost              string `envconfig:"db_host" required:"true"`
 	DBName              string `envconfig:"db_name" required:"true"`
 	DBUsername          string `envconfig:"db_username" required:"true"`
@@ -34,12 +38,28 @@ type service struct {
 	payment_decisionv1connect.PaymentDecisionServiceHandler
 	db                    *bun.DB
 	identityServiceClient identityv1connect.IdentityServiceClient
+	accountServiceClient  accountv1connect.AccountServiceClient
+	ledgerServiceClient   ledgerv1connect.LedgerServiceClient
 }
 
 func (s service) DecidePayment(ctx context.Context, request *v1.DecidePaymentRequest) (*v1.DecidePaymentResponse, error) {
 	id, err := s.identityServiceClient.ID(ctx, &emptypb.Empty{})
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	balances, err := s.ledgerServiceClient.GetBalances(ctx, &ledgerv1.GetBalancesRequest{
+		AccountId: request.AccountId,
+	})
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	if balances.AvailableBalance < request.Amount {
+		return &v1.DecidePaymentResponse{
+			Decision:   v1.Decision_DECLINED,
+			DecisionId: id.Id,
+		}, nil
 	}
 
 	return &v1.DecidePaymentResponse{
@@ -73,9 +93,15 @@ func main() {
 		c.IdentityServiceAddr,
 	)
 
+	ledgerServiceClient := ledgerv1connect.NewLedgerServiceClient(
+		http.DefaultClient,
+		c.LedgerServiceAddr,
+	)
+
 	svc := service{
 		db:                    db,
 		identityServiceClient: identityServiceClient,
+		ledgerServiceClient:   ledgerServiceClient,
 	}
 
 	path, handler := payment_decisionv1connect.NewPaymentDecisionServiceHandler(svc, connect.WithInterceptors(validate.NewInterceptor()))

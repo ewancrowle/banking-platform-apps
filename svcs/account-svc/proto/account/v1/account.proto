@@ -72,7 +72,9 @@ message GetAccountResponse {
   string line_2 = 8;
   string town = 9;
   string postcode = 10;
-  string created_at = 11;
+  bool is_frozen = 11;
+  string currency_code = 12;
+  string created_at = 13;
 }
 
 service AccountService {

@@ -1,0 +1,55 @@
+on:
+  push:
+    paths:
+      - "svcs/identity-svc/**"
+      - "svcs/account-svc/**"
+      - "svcs/merchant-svc/**"
+      - "svcs/payment-decision-svc/**"
+      - "svcs/payment-svc/**"
+      - ".github/workflows/payment-svc.yaml"
+jobs:
+  build-and-push-image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v5
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.26.1"
+      - uses: bufbuild/buf-action@v1
+        with:
+          setup_only: true
+      - run: buf generate svcs/identity-svc --template svcs/identity-svc/buf.gen.yaml --output svcs/identity-svc
+      - run: buf generate svcs/account-svc --template svcs/account-svc/buf.gen.yaml --output svcs/account-svc
+      - run: buf generate svcs/merchant-svc --template svcs/merchant-svc/buf.gen.yaml --output svcs/merchant-svc
+      - run: buf generate svcs/payment-decision-svc --template svcs/payment-decision-svc/buf.gen.yaml --output svcs/payment-decision-svc
+      - run: buf generate svcs/payment-svc --template svcs/payment-svc/buf.gen.yaml --output svcs/payment-svc
+      - name: Build
+        run: go build -v svcs/payment-svc/cmd/server/main.go
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}/payment-svc
+          tags: |
+            # set latest tag for default branch
+            type=raw,value=latest,enable={{is_default_branch}}
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          file: ./svcs/payment-svc/Dockerfile

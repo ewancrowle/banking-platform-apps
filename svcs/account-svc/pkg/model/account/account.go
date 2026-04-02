@@ -22,6 +22,7 @@ type Account struct {
 	Town         string `bun:",notnull"`
 	Postcode     string `bun:",notnull"`
 	IsFrozen     bool   `bun:",notnull"`
+	CurrencyCode string `bun:",notnull"`
 
 	CreatedAt time.Time `bun:",nullzero,notnull,default:current_timestamp"`
 	UpdatedAt time.Time `bun:",nullzero,notnull,default:current_timestamp"`

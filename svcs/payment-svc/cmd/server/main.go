@@ -248,12 +248,18 @@ func main() {
 		c.MerchantServiceAddr,
 	)
 
+	paymentDecisionServiceClient := payment_decisionv1connect.NewPaymentDecisionServiceClient(
+		http.DefaultClient,
+		c.PaymentDecisionServiceAddr,
+	)
+
 	svc := service{
 		db:                    db,
 		kafkaCl:               kafkaCl,
 		identityServiceClient: identityServiceClient,
 		accountServiceClient:  accountServiceClient,
 		merchantServiceClient: merchantServiceClient,
+		paymentDecisionClient: paymentDecisionServiceClient,
 	}
 
 	path, handler := paymentv1connect.NewPaymentServiceHandler(svc, connect.WithInterceptors(validate.NewInterceptor()))
