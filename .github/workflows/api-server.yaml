@@ -4,6 +4,7 @@ on:
       - "svcs/identity-svc/**"
       - "svcs/account-svc/**"
       - "svcs/oauth-svc/**"
+      - "svcs/confirmation-of-payee-svc/**"
       - "apps/api-server/**"
       - ".github/workflows/api-server.yaml"
 jobs:
@@ -22,6 +23,7 @@ jobs:
       - run: buf generate svcs/identity-svc --include-imports --template svcs/identity-svc/buf.gen.yaml --output svcs/identity-svc
       - run: buf generate svcs/account-svc --include-imports --template svcs/account-svc/buf.gen.yaml --output svcs/account-svc
       - run: buf generate svcs/oauth-svc --include-imports --template svcs/oauth-svc/buf.gen.yaml --output svcs/oauth-svc
+      - run: buf generate svcs/confirmation-of-payee-svc --include-imports --template svcs/confirmation-of-payee-svc/buf.gen.yaml --output svcs/confirmation-of-payee-svc
       - uses: oven-sh/setup-bun@v2
       - name: Install dependencies
         run: bun install

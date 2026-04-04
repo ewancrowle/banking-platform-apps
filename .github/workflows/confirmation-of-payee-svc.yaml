@@ -1,6 +1,7 @@
 on:
   push:
     paths:
+      - "svcs/identity-svc/**"
       - "svcs/confirmation-of-payee-svc/**"
       - ".github/workflows/confirmation-of-payee-svc.yaml"
 jobs:
@@ -20,6 +21,7 @@ jobs:
       - uses: bufbuild/buf-action@v1
         with:
           setup_only: true
+      - run: buf generate svcs/identity-svc --template svcs/identity-svc/buf.gen.yaml --output svcs/identity-svc
       - run: buf generate svcs/confirmation-of-payee-svc --template svcs/confirmation-of-payee-svc/buf.gen.yaml --output svcs/confirmation-of-payee-svc
       - name: Build
         run: go build -v svcs/confirmation-of-payee-svc/cmd/server/main.go

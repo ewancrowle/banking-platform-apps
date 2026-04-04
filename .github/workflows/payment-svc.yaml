@@ -6,6 +6,7 @@ on:
       - "svcs/merchant-svc/**"
       - "svcs/payment-decision-svc/**"
       - "svcs/payment-svc/**"
+      - "svcs/confirmation-of-payee-svc/**"
       - ".github/workflows/payment-svc.yaml"
 jobs:
   build-and-push-image:
@@ -29,6 +30,7 @@ jobs:
       - run: buf generate svcs/merchant-svc --template svcs/merchant-svc/buf.gen.yaml --output svcs/merchant-svc
       - run: buf generate svcs/payment-decision-svc --template svcs/payment-decision-svc/buf.gen.yaml --output svcs/payment-decision-svc
       - run: buf generate svcs/payment-svc --template svcs/payment-svc/buf.gen.yaml --output svcs/payment-svc
+      - run: buf generate svcs/confirmation-of-payee-svc --template svcs/confirmation-of-payee-svc/buf.gen.yaml --output svcs/confirmation-of-payee-svc
       - name: Build
         run: go build -v svcs/payment-svc/cmd/server/main.go
       - name: Login to GitHub Container Registry
