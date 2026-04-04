@@ -1,42 +1,46 @@
-import { z } from "zod";
-import { publicProcedure } from "../../index";
+import * as z from "zod";
 import accountService from "../../../clients/account";
 import oauthService from "../../../clients/oauth";
 import serverError from "../../../utils/server-error";
+import { publicProcedure } from "../..";
 
 const signUp = publicProcedure
-  .input(
-    z.object({
-      firstName: z.string(),
-      middleNames: z.string().optional(),
-      lastName: z.string(),
-      email: z.email(),
-      password: z.string().regex(/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$ %^&*-]).{8,}$/),
-      line1: z.string(),
-      line2: z.string().optional(),
-      town: z.string(),
-      postcode: z.string(),
-    }),
-  )
-  .output(
-    z.object({
-      accessToken: z.string(),
-      expiresIn: z.number(),
-      refreshToken: z.string(),
-    }),
-  )
-  .mutation(async (opts) => {
-    try {
-      await accountService.createAccount(opts.input);
-      return await oauthService.token({
-        email: opts.input.email,
-        ipAddress: opts.ctx.ipAddress,
-        password: opts.input.password,
-        userAgent: opts.ctx.userAgent,
-      });
-    } catch (err) {
-      throw serverError(err);
-    }
-  });
+	.input(
+		z.object({
+			firstName: z.string(),
+			middleNames: z.string().optional(),
+			lastName: z.string(),
+			email: z.email(),
+			password: z
+				.string()
+				.regex(
+					/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$ %^&*-]).{8,}$/,
+				),
+			line1: z.string(),
+			line2: z.string().optional(),
+			town: z.string(),
+			postcode: z.string(),
+		}),
+	)
+	.output(
+		z.object({
+			accessToken: z.string(),
+			expiresIn: z.number(),
+			refreshToken: z.string(),
+		}),
+	)
+	.mutation(async (opts) => {
+		try {
+			await accountService.createAccount(opts.input);
+			return await oauthService.token({
+				email: opts.input.email,
+				ipAddress: opts.ctx.ipAddress,
+				password: opts.input.password,
+				userAgent: opts.ctx.userAgent,
+			});
+		} catch (err) {
+			throw serverError(err);
+		}
+	});
 
 export default signUp;

@@ -1,12 +1,19 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import { FlatList, Pressable, StyleSheet, Text, useColorScheme, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useEffect } from "react";
+import {
+	FlatList,
+	Pressable,
+	StyleSheet,
+	Text,
+	useColorScheme,
+	View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { getAccount } from "@/api/auth";
 import { ThemedButton } from "@/components/themed-button";
-import { TransactionItem } from "@/components/transaction-item";
 import { ThemedText } from "@/components/themed-text";
+import { TransactionItem } from "@/components/transaction-item";
 
 const transactions = [
 	{
@@ -35,6 +42,7 @@ const transactions = [
 	},
 ];
 
+import { router } from "expo-router";
 import { useAuthStore } from "@/store/auth";
 
 export default function HomeScreen() {
@@ -74,17 +82,25 @@ export default function HomeScreen() {
 							>
 								<Text style={styles.initialsText}>{initials}</Text>
 							</Pressable>
-							<ThemedButton icon="help-buoy-outline" variant="ghost" style={{
-								width: "auto"
-							}}>
+							<ThemedButton
+								icon="help-buoy-outline"
+								variant="ghost"
+								style={{
+									width: "auto",
+								}}
+							>
 								Help
 							</ThemedButton>
 						</View>
 						<View style={styles.accountInfoContainer}>
-							<ThemedText style={{
-								fontSize: 18,
-								fontWeight: "600"
-							}}>{account?.firstName}'s Current Account</ThemedText>
+							<ThemedText
+								style={{
+									fontSize: 18,
+									fontWeight: "600",
+								}}
+							>
+								{account?.firstName}&apos;s Current Account
+							</ThemedText>
 							<View style={styles.accountDetails}>
 								<Ionicons
 									name="card-outline"
@@ -95,23 +111,43 @@ export default function HomeScreen() {
 							</View>
 						</View>
 						<View style={styles.balanceContainer}>
-							<ThemedText style={{
-								fontSize: 18,
-								fontWeight: "600"
-							}}>Available balance</ThemedText>
-							<ThemedText style={{
-								fontSize: 32,
-								fontWeight: "700",
-							}}>£50.00</ThemedText>
+							<ThemedText
+								style={{
+									fontSize: 18,
+									fontWeight: "600",
+								}}
+							>
+								Available balance
+							</ThemedText>
+							<ThemedText
+								style={{
+									fontSize: 32,
+									fontWeight: "700",
+								}}
+							>
+								£50.00
+							</ThemedText>
 						</View>
 						<View style={styles.buttonContainer}>
-							<ThemedButton icon="add" style={styles.flexButton}>Add money</ThemedButton>
-							<ThemedButton icon="arrow-forward" style={styles.flexButton}>Pay someone</ThemedButton>
+							<ThemedButton icon="add" style={styles.flexButton}>
+								Add money
+							</ThemedButton>
+							<ThemedButton
+								icon="arrow-forward"
+								style={styles.flexButton}
+								onPress={() => router.push("/new-payment")}
+							>
+								Pay someone
+							</ThemedButton>
 						</View>
-						<ThemedText style={{
-							fontSize: 18,
-							fontWeight: "600"
-						}}>Recent transactions</ThemedText>
+						<ThemedText
+							style={{
+								fontSize: 18,
+								fontWeight: "600",
+							}}
+						>
+							Recent transactions
+						</ThemedText>
 					</View>
 				}
 				renderItem={({ item }) => (

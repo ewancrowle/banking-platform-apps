@@ -2,26 +2,22 @@ syntax = "proto3";
 
 package payment.v1;
 
-import "google/protobuf/empty.proto";
-
 import "buf/validate/validate.proto";
+import "google/protobuf/empty.proto";
 
 message AuthorisePaymentRequest {
   int64 account_id = 1;
   optional int64 merchant_id = 2;
-  optional int64 other_account_id = 3;
+  optional string confirmation_of_payee_token = 3;
   int64 amount = 4;
-  string currency_code = 5 [(buf.validate.field).string = {
-    min_len: 3,
-    max_len: 3,
-  }];
+  string currency_code = 5 [(buf.validate.field).string.len = 3];
   string description = 6 [(buf.validate.field).string = {
-    min_len: 1,
-    max_len: 25,
+    min_len: 1
+    max_len: 25
   }];
   string type = 7 [(buf.validate.field).string = {
-    min_len: 1,
-    max_len: 25,
+    min_len: 1
+    max_len: 25
   }];
 }
 

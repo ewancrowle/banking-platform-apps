@@ -3,6 +3,8 @@ package main
 import (
 	accountv1 "account-svc/gen/account/v1"
 	"account-svc/gen/account/v1/accountv1connect"
+	confirmation_of_payeev1 "confirmation-of-payee-svc/gen/confirmation_of_payee/v1"
+	"confirmation-of-payee-svc/gen/confirmation_of_payee/v1/confirmation_of_payeev1connect"
 	"context"
 	"database/sql"
 	"encoding/json"
@@ -48,12 +50,13 @@ type config struct {
 
 type service struct {
 	paymentv1connect.PaymentServiceHandler
-	db                    *bun.DB
-	kafkaCl               *kgo.Client
-	identityServiceClient identityv1connect.IdentityServiceClient
-	accountServiceClient  accountv1connect.AccountServiceClient
-	merchantServiceClient merchantv1connect.MerchantServiceClient
-	paymentDecisionClient payment_decisionv1connect.PaymentDecisionServiceClient
+	db                               *bun.DB
+	kafkaCl                          *kgo.Client
+	identityServiceClient            identityv1connect.IdentityServiceClient
+	accountServiceClient             accountv1connect.AccountServiceClient
+	merchantServiceClient            merchantv1connect.MerchantServiceClient
+	paymentDecisionClient            payment_decisionv1connect.PaymentDecisionServiceClient
+	confirmationOfPayeeServiceClient confirmation_of_payeev1connect.ConfirmationOfPayeeServiceClient
 }
 
 func (s service) AuthorisePayment(ctx context.Context, request *v1.AuthorisePaymentRequest) (*v1.AuthorisePaymentResponse, error) {
@@ -92,16 +95,27 @@ func (s service) AuthorisePayment(ctx context.Context, request *v1.AuthorisePaym
 	correctedAmount := paymentType.GetCorrectDirection(request.Amount)
 
 	if paymentType == payment.TypeAccountToAccount {
-		if request.OtherAccountId == nil {
-			return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("other account id is required"))
+		if request.ConfirmationOfPayeeToken == nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("confirmation of payee token is required"))
 		}
 
-		if request.AccountId == request.GetOtherAccountId() {
+		otherAccountId, err := s.confirmationOfPayeeServiceClient.IntrospectToken(ctx, &confirmation_of_payeev1.IntrospectTokenRequest{
+			ConfirmationOfPayeeToken: request.GetConfirmationOfPayeeToken(),
+		})
+		if err != nil {
+			connectErr := new(connect.Error)
+			if errors.As(err, &connectErr) && connectErr.Code() == connect.CodeInternal {
+				return nil, connect.NewError(connect.CodeInternal, err)
+			}
+			return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("confirmation of payee token is invalid"))
+		}
+
+		if request.AccountId == otherAccountId.AccountId {
 			return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("both account ids cannot be the same"))
 		}
 
 		if _, err := s.accountServiceClient.GetAccount(ctx, &accountv1.GetAccountRequest{
-			Id: request.GetOtherAccountId(),
+			Id: request.AccountId,
 		}); err != nil {
 			return nil, connect.NewError(connect.CodeNotFound, errors.New("other account not found"))
 		}

@@ -102,8 +102,10 @@ export default function RootLayout() {
 				/>
 				<Stack.Screen name="home" options={{ headerShown: false }} />
 				<Stack.Screen
-					name="modal"
-					options={{ presentation: "modal", title: "Modal" }}
+					name="new-payment"
+					options={{
+						title: "New Payment",
+					}}
 				/>
 			</Stack>
 			<StatusBar style="auto" />

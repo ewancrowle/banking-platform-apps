@@ -64,7 +64,7 @@ export default function LoginScreen() {
     return (
         <Pressable style={{ flex: 1, padding: 16 }} onPress={Keyboard.dismiss}>
             <ScrollView showsVerticalScrollIndicator={false}>
-                <ThemedText>Let's get you logged in.</ThemedText>
+                <ThemedText>Let&apos;s get you logged in.</ThemedText>
 
                 <Section title="Enter your login details">
                     <form.Field name="email">

@@ -1,0 +1,47 @@
+on:
+  push:
+    paths:
+      - "svcs/confirmation-of-payee-svc/**"
+      - ".github/workflows/confirmation-of-payee-svc.yaml"
+jobs:
+  build-and-push-image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v5
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.26.1"
+      - uses: bufbuild/buf-action@v1
+        with:
+          setup_only: true
+      - run: buf generate svcs/confirmation-of-payee-svc --template svcs/confirmation-of-payee-svc/buf.gen.yaml --output svcs/confirmation-of-payee-svc
+      - name: Build
+        run: go build -v svcs/confirmation-of-payee-svc/cmd/server/main.go
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}/confirmation-of-payee-svc
+          tags: |
+            # set latest tag for default branch
+            type=raw,value=latest,enable={{is_default_branch}}
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          file: ./svcs/confirmation-of-payee-svc/Dockerfile

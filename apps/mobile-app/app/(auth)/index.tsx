@@ -14,7 +14,7 @@ export default function AuthScreen() {
 				<View style={styles.section}>
 					<Text style={styles.title}>Welcome</Text>
 					<Text style={styles.subtitle}>
-						The bank you'll actually like. Experience banking that stays out
+						The bank you&apos;ll actually like. Experience banking that stays out
 						of your way.
 					</Text>
 				</View>

@@ -1,7 +1,7 @@
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { formOptions, useForm, useStore } from "@tanstack/react-form";
 import { useState } from "react";
-import { Alert, Keyboard, Pressable, ScrollView, useColorScheme } from "react-native";
+import { Alert, Keyboard, Pressable, ScrollView } from "react-native";
 import * as z from "zod";
 import trpc from "@/api/trpc";
 import { Section } from "@/components/section";
@@ -9,45 +9,49 @@ import { ThemedButton } from "@/components/themed-button";
 import { ThemedInput } from "@/components/themed-input";
 import { ThemedText } from "@/components/themed-text";
 import { useAuthStore } from "@/store/auth";
-import { getTRPCErrorCode } from "@/utils/get-trpc-error-code";
 
-const formSchema = z.object({
-	firstName: z.string().min(1, {
-		message: "Please enter your first name."
-	}),
-	middleNames: z.string().optional(),
-	lastName: z.string().min(1, {
-		message: "Please enter your last name."
-	}),
-	email: z.email({
-		message: "Please enter a valid email address."
-	}),
-	phoneNumber: z.string().min(1, {
-		message: "Please enter your phone number."
-	}),
-	password: z
-		.string()
-		.regex(/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$ %^&*-]).{8,}$/, {
-			message:
-				"Your password must be at least 8 characters and include uppercase, lowercase, a number, and a special character.",
+const formSchema = z
+	.object({
+		firstName: z.string().min(1, {
+			message: "Please enter your first name.",
 		}),
-	confirmPassword: z.string().min(1, {
-		message: "Please confirm your password."
-	}),
-	line1: z.string().min(1, {
-		message: "Please enter your address line 1."
-	}),
-	line2: z.string().optional(),
-	town: z.string().min(1, {
-		message: "Please enter your town."
-	}),
-	postcode: z.string().min(1, {
-		message: "Please enter your postcode."
-	}),
-}).refine(arg => arg.password === arg.confirmPassword, {
-	message: "Passwords do not match.",
-	path: ["confirmPassword"],
-});
+		middleNames: z.string().optional(),
+		lastName: z.string().min(1, {
+			message: "Please enter your last name.",
+		}),
+		email: z.email({
+			message: "Please enter a valid email address.",
+		}),
+		phoneNumber: z.string().min(1, {
+			message: "Please enter your phone number.",
+		}),
+		password: z
+			.string()
+			.regex(
+				/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$ %^&*-]).{8,}$/,
+				{
+					message:
+						"Your password must be at least 8 characters and include uppercase, lowercase, a number, and a special character.",
+				},
+			),
+		confirmPassword: z.string().min(1, {
+			message: "Please confirm your password.",
+		}),
+		line1: z.string().min(1, {
+			message: "Please enter your address line 1.",
+		}),
+		line2: z.string().optional(),
+		town: z.string().min(1, {
+			message: "Please enter your town.",
+		}),
+		postcode: z.string().min(1, {
+			message: "Please enter your postcode.",
+		}),
+	})
+	.refine((arg) => arg.password === arg.confirmPassword, {
+		message: "Passwords do not match.",
+		path: ["confirmPassword"],
+	});
 
 const formOpts = formOptions({
 	defaultValues: {
@@ -65,7 +69,7 @@ const formOpts = formOptions({
 	} as z.infer<typeof formSchema>,
 	validators: {
 		onChange: formSchema,
-	}
+	},
 });
 
 export default function NewAccountScreen() {
@@ -91,7 +95,7 @@ export default function NewAccountScreen() {
 	return (
 		<Pressable style={{ flex: 1, padding: 16 }} onPress={Keyboard.dismiss}>
 			<ScrollView showsVerticalScrollIndicator={false}>
-				<ThemedText>Let's get you set up with a new account.</ThemedText>
+				<ThemedText>Let&apos;s get you set up with a new account.</ThemedText>
 
 				<Section title="Enter your name">
 					<form.Field name="firstName">
@@ -109,7 +113,9 @@ export default function NewAccountScreen() {
 								/>
 								{formErrorMap.onChange?.firstName && (
 									<ThemedText style={{ color: "red", marginTop: 4 }}>
-										{formErrorMap.onChange.firstName.map((issue) => issue.message).join(", ")}
+										{formErrorMap.onChange.firstName
+											.map((issue) => issue.message)
+											.join(", ")}
 									</ThemedText>
 								)}
 							</>
@@ -131,7 +137,9 @@ export default function NewAccountScreen() {
 								/>
 								{formErrorMap.onChange?.middleNames && (
 									<ThemedText style={{ color: "red", marginTop: 4 }}>
-										{formErrorMap.onChange.middleNames.map((issue) => issue.message).join(", ")}
+										{formErrorMap.onChange.middleNames
+											.map((issue) => issue.message)
+											.join(", ")}
 									</ThemedText>
 								)}
 							</>
@@ -153,7 +161,9 @@ export default function NewAccountScreen() {
 								/>
 								{formErrorMap.onChange?.lastName && (
 									<ThemedText style={{ color: "red", marginTop: 4 }}>
-										{formErrorMap.onChange.lastName.map((issue) => issue.message).join(", ")}
+										{formErrorMap.onChange.lastName
+											.map((issue) => issue.message)
+											.join(", ")}
 									</ThemedText>
 								)}
 							</>
@@ -196,7 +206,9 @@ export default function NewAccountScreen() {
 								/>
 								{formErrorMap.onChange?.email && (
 									<ThemedText style={{ color: "red", marginTop: 4 }}>
-										{formErrorMap.onChange.email.map((issue) => issue.message).join(", ")}
+										{formErrorMap.onChange.email
+											.map((issue) => issue.message)
+											.join(", ")}
 									</ThemedText>
 								)}
 							</>
@@ -217,7 +229,9 @@ export default function NewAccountScreen() {
 								/>
 								{formErrorMap.onChange?.phoneNumber && (
 									<ThemedText style={{ color: "red", marginTop: 4 }}>
-										{formErrorMap.onChange.phoneNumber.map((issue) => issue.message).join(", ")}
+										{formErrorMap.onChange.phoneNumber
+											.map((issue) => issue.message)
+											.join(", ")}
 									</ThemedText>
 								)}
 							</>
@@ -240,7 +254,9 @@ export default function NewAccountScreen() {
 								/>
 								{formErrorMap.onChange?.line1 && (
 									<ThemedText style={{ color: "red", marginTop: 4 }}>
-										{formErrorMap.onChange.line1.map((issue) => issue.message).join(", ")}
+										{formErrorMap.onChange.line1
+											.map((issue) => issue.message)
+											.join(", ")}
 									</ThemedText>
 								)}
 							</>
@@ -261,7 +277,9 @@ export default function NewAccountScreen() {
 								/>
 								{formErrorMap.onChange?.line2 && (
 									<ThemedText style={{ color: "red", marginTop: 4 }}>
-										{formErrorMap.onChange.line2.map((issue) => issue.message).join(", ")}
+										{formErrorMap.onChange.line2
+											.map((issue) => issue.message)
+											.join(", ")}
 									</ThemedText>
 								)}
 							</>
@@ -282,7 +300,9 @@ export default function NewAccountScreen() {
 								/>
 								{formErrorMap.onChange?.town && (
 									<ThemedText style={{ color: "red", marginTop: 4 }}>
-										{formErrorMap.onChange.town.map((issue) => issue.message).join(", ")}
+										{formErrorMap.onChange.town
+											.map((issue) => issue.message)
+											.join(", ")}
 									</ThemedText>
 								)}
 							</>
@@ -303,7 +323,9 @@ export default function NewAccountScreen() {
 								/>
 								{formErrorMap.onChange?.postcode && (
 									<ThemedText style={{ color: "red", marginTop: 4 }}>
-										{formErrorMap.onChange.postcode.map((issue) => issue.message).join(", ")}
+										{formErrorMap.onChange.postcode
+											.map((issue) => issue.message)
+											.join(", ")}
 									</ThemedText>
 								)}
 							</>
@@ -328,7 +350,9 @@ export default function NewAccountScreen() {
 								/>
 								{formErrorMap.onChange?.password && (
 									<ThemedText style={{ color: "red", marginTop: 4 }}>
-										{formErrorMap.onChange.password.map((issue) => issue.message).join(", ")}
+										{formErrorMap.onChange.password
+											.map((issue) => issue.message)
+											.join(", ")}
 									</ThemedText>
 								)}
 							</>
@@ -359,7 +383,9 @@ export default function NewAccountScreen() {
 								/>
 								{formErrorMap.onChange?.confirmPassword && (
 									<ThemedText style={{ color: "red", marginTop: 4 }}>
-										{formErrorMap.onChange.confirmPassword.map((issue) => issue.message).join(", ")}
+										{formErrorMap.onChange.confirmPassword
+											.map((issue) => issue.message)
+											.join(", ")}
 									</ThemedText>
 								)}
 							</>

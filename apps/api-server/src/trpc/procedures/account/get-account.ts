@@ -1,4 +1,4 @@
-import { protectedProcedure } from "../../index";
+import { protectedProcedure } from "../..";
 
 const getAccount = protectedProcedure.query((opts) => opts.ctx.account);
 

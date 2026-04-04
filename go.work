@@ -4,6 +4,7 @@ use (
 	./apps/ch-migrations-tool
 	./apps/migrations-tool
 	./svcs/account-svc
+	./svcs/confirmation-of-payee-svc
 	./svcs/identity-svc
 	./svcs/ledger-svc
 	./svcs/merchant-svc
