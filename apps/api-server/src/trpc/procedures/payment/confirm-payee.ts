@@ -13,7 +13,7 @@ const confirmPayee = publicProcedure
 	)
 	.output(
 		z.object({
-			confirmationOfPayeeToken: z.bigint(),
+			confirmationOfPayeeToken: z.string(),
 		}),
 	)
 	.mutation(async (opts) => {
