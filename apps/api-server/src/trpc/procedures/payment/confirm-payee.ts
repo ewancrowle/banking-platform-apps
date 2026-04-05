@@ -1,9 +1,9 @@
 import * as z from "zod";
 import copService from "../../../clients/confirmation-of-payee";
 import serverError from "../../../utils/server-error";
-import { publicProcedure } from "../..";
+import { protectedProcedure } from "../..";
 
-const confirmPayee = publicProcedure
+const confirmPayee = protectedProcedure
 	.input(
 		z.object({
 			firstName: z.string(),

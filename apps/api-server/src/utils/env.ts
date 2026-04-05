@@ -6,6 +6,7 @@ export const env = createEnv({
 		ACCOUNT_SERVICE_URL: z.url(),
 		AUTH_SERVICE_URL: z.url(),
 		COP_SERVICE_URL: z.url(),
+		PAYMENT_SERVICE_URL: z.url(),
 	},
 
 	/**

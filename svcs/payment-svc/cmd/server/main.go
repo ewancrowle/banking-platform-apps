@@ -93,13 +93,14 @@ func (s service) AuthorisePayment(ctx context.Context, request *v1.AuthorisePaym
 	}
 
 	correctedAmount := paymentType.GetCorrectDirection(request.Amount)
+	var otherAccountId *int64
 
 	if paymentType == payment.TypeAccountToAccount {
 		if request.ConfirmationOfPayeeToken == nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("confirmation of payee token is required"))
 		}
 
-		otherAccountId, err := s.confirmationOfPayeeServiceClient.IntrospectToken(ctx, &confirmation_of_payeev1.IntrospectTokenRequest{
+		i, err := s.confirmationOfPayeeServiceClient.IntrospectToken(ctx, &confirmation_of_payeev1.IntrospectTokenRequest{
 			ConfirmationOfPayeeToken: request.GetConfirmationOfPayeeToken(),
 		})
 		if err != nil {
@@ -110,7 +111,9 @@ func (s service) AuthorisePayment(ctx context.Context, request *v1.AuthorisePaym
 			return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("confirmation of payee token is invalid"))
 		}
 
-		if request.AccountId == otherAccountId.AccountId {
+		otherAccountId = &i.AccountId
+
+		if request.AccountId == *otherAccountId {
 			return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("both account ids cannot be the same"))
 		}
 
@@ -130,7 +133,7 @@ func (s service) AuthorisePayment(ctx context.Context, request *v1.AuthorisePaym
 		ID:             id.Id,
 		AccountID:      request.AccountId,
 		MerchantID:     request.MerchantId,
-		OtherAccountID: request.OtherAccountId,
+		OtherAccountID: otherAccountId,
 		Amount:         correctedAmount,
 		CurrencyCode:   request.CurrencyCode,
 		Description:    request.Description,
@@ -159,7 +162,7 @@ func (s service) AuthorisePayment(ctx context.Context, request *v1.AuthorisePaym
 		PaymentId:      id.Id,
 		AccountId:      request.AccountId,
 		MerchantId:     request.MerchantId,
-		OtherAccountId: request.OtherAccountId,
+		OtherAccountId: otherAccountId,
 		Amount:         correctedAmount,
 		CurrencyCode:   request.CurrencyCode,
 		Description:    request.Description,

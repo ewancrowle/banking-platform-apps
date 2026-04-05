@@ -1,7 +1,7 @@
 import { createTRPCClient, httpBatchLink } from "@trpc/client";
 import type { AppRouter } from "api-server";
-import { useAuthStore } from "@/store/auth";
 import superjson from "superjson";
+import { useAuthStore } from "@/store/auth";
 
 export default createTRPCClient<AppRouter>({
 	links: [

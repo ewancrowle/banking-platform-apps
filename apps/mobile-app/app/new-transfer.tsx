@@ -1,10 +1,19 @@
 import { formOptions, useForm, useStore } from "@tanstack/react-form";
-import { Keyboard, Pressable, ScrollView, useColorScheme } from "react-native";
+import { router } from "expo-router";
+import {
+	Alert,
+	Keyboard,
+	Pressable,
+	ScrollView,
+	useColorScheme,
+} from "react-native";
 import CurrencyInput from "react-native-currency-input";
 import * as z from "zod";
+import trpc from "@/api/trpc";
 import { Section } from "@/components/section";
 import { ThemedInput } from "@/components/themed-input";
 import { ThemedText } from "@/components/themed-text";
+import { getTRPCErrorCode } from "@/utils/get-trpc-error-code";
 
 const formSchema = z.object({
 	firstName: z.string().min(1, {
@@ -54,7 +63,9 @@ const formSchema = z.object({
 	amount: z.number().min(1, {
 		message: "Please enter a valid amount.",
 	}),
-	reference: z.string().optional(),
+	reference: z.string().min(1, {
+		message: "Please enter a reference.",
+	}),
 });
 
 const formOpts = formOptions({
@@ -70,11 +81,47 @@ const formOpts = formOptions({
 	},
 });
 
-export default function NewPaymentScreen() {
+export default function NewTransferScreen() {
 	const colorScheme = useColorScheme();
 
 	const form = useForm({
 		...formOpts,
+		onSubmit: async ({ value }) => {
+			let confirmPayeeToken: string | undefined;
+
+			try {
+				const confirmPayee = await trpc.payment.confirmPayee.mutate({
+					firstName: value.firstName,
+					lastName: value.lastName,
+					accountNumber: value.accountNumber,
+				});
+				confirmPayeeToken = confirmPayee.confirmationOfPayeeToken;
+				Alert.alert("It&apos;s a match!");
+			} catch (err) {
+				const code = getTRPCErrorCode(err);
+				if (code === "NOT_FOUND") {
+					Alert.alert("Payee not found. Verify the information and try again.");
+					form.reset();
+					return;
+				}
+				Alert.alert("An error occurred. Please try again later.");
+				return;
+			}
+
+			try {
+				await trpc.payment.newTransfer.mutate({
+					confirmationOfPayeeToken: confirmPayeeToken,
+					amount: value.amount,
+					reference: value.reference,
+				});
+				Alert.alert("Transfer successful!");
+				form.reset();
+				router.back();
+			} catch (err) {
+				Alert.alert("An error occurred. Please try again later.");
+				return;
+			}
+		},
 	});
 
 	const formErrorMap = useStore(form.store, (state) => state.errorMap);
