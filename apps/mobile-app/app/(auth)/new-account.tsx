@@ -84,6 +84,7 @@ export default function NewAccountScreen() {
 				store.setAccount(account);
 			} catch (err) {
 				Alert.alert("An error occurred. Please try again later.");
+				console.log(err);
 			}
 		},
 	});

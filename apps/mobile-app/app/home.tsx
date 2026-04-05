@@ -162,7 +162,7 @@ export default function HomeScreen() {
 							<ThemedButton
 								icon="arrow-forward"
 								style={styles.flexButton}
-								onPress={() => router.push("/new-payment")}
+								onPress={() => router.push("/new-transfer")}
 							>
 								Pay someone
 							</ThemedButton>

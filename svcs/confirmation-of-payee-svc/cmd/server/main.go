@@ -4,6 +4,7 @@ import (
 	"account-svc/pkg/model/account"
 	v1 "confirmation-of-payee-svc/gen/confirmation_of_payee/v1"
 	"confirmation-of-payee-svc/gen/confirmation_of_payee/v1/confirmation_of_payeev1connect"
+	"confirmation-of-payee-svc/pkg/model/confirmationofpayee"
 	"context"
 	"crypto/rand"
 	"crypto/sha256"
@@ -41,33 +42,6 @@ type service struct {
 	identityServiceClient identityv1connect.IdentityServiceClient
 }
 
-type ConfirmationOfPayeeToken struct {
-	bun.BaseModel `bun:"table:confirmation_of_payee_token"`
-
-	ID        int64  `bun:",pk"`
-	AccountID int64  `bun:",notnull"`
-	Hash      string `bun:",unique,notnull"`
-
-	CreatedAt time.Time `bun:",nullzero,notnull,default:current_timestamp"`
-	UsedAt    time.Time `bun:",notnull"`
-}
-
-func (t *ConfirmationOfPayeeToken) Insert(ctx context.Context, db *bun.DB) error {
-	_, err := db.NewInsert().Model(t).Exec(ctx)
-	return err
-}
-
-func SelectTokenByHash(ctx context.Context, db *bun.DB, hash string) (*ConfirmationOfPayeeToken, error) {
-	t := new(ConfirmationOfPayeeToken)
-	err := db.NewSelect().Model(t).Where("hash = ?", hash).Scan(ctx)
-	return t, err
-}
-
-func (t *ConfirmationOfPayeeToken) SetUsedAt(ctx context.Context, db *bun.DB, usedAt time.Time) error {
-	_, err := db.NewUpdate().Model(t).Set("expires_at = ?", usedAt).WherePK().Exec(ctx)
-	return err
-}
-
 func (s *service) ConfirmPayee(ctx context.Context, req *v1.ConfirmPayeeRequest) (*v1.ConfirmPayeeResponse, error) {
 	a := new(account.Account)
 	exists, err := s.db.NewSelect().
@@ -95,7 +69,7 @@ func (s *service) ConfirmPayee(ctx context.Context, req *v1.ConfirmPayeeRequest)
 	hash := sha256.Sum256([]byte(tokenString))
 	hashString := hex.EncodeToString(hash[:])
 
-	t := ConfirmationOfPayeeToken{
+	t := confirmationofpayee.ConfirmationOfPayeeToken{
 		AccountID: a.ID,
 		Hash:      hashString,
 	}
@@ -111,7 +85,7 @@ func (s *service) IntrospectToken(ctx context.Context, req *v1.IntrospectTokenRe
 	hash := sha256.Sum256([]byte(req.ConfirmationOfPayeeToken))
 	hashString := hex.EncodeToString(hash[:])
 
-	t, err := SelectTokenByHash(ctx, s.db, hashString)
+	t, err := confirmationofpayee.SelectTokenByHash(ctx, s.db, hashString)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, connect.NewError(connect.CodeNotFound, errors.New("token not found"))

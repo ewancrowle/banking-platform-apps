@@ -102,9 +102,9 @@ export default function RootLayout() {
 				/>
 				<Stack.Screen name="home" options={{ headerShown: false }} />
 				<Stack.Screen
-					name="new-payment"
+					name="new-transfer"
 					options={{
-						title: "New Payment",
+						title: "New Transfer",
 					}}
 				/>
 			</Stack>

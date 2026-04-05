@@ -2,7 +2,7 @@ package migrations
 
 import (
 	"account-svc/pkg/model/account"
-	cop "confirmation-of-payee-svc/cmd/server"
+	"confirmation-of-payee-svc/pkg/model/confirmationofpayee"
 	"context"
 	"fmt"
 	"merchant-svc/pkg/model/merchant"
@@ -62,7 +62,7 @@ func init() {
 			}
 
 			_, err = tx.NewCreateTable().
-				Model((*cop.ConfirmationOfPayeeToken)(nil)).
+				Model((*confirmationofpayee.ConfirmationOfPayeeToken)(nil)).
 				IfNotExists().
 				WithForeignKeys().
 				Exec(ctx)
@@ -86,6 +86,22 @@ func init() {
 
 		return db.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
 			_, err := tx.NewDropTable().
+				Model((*confirmationofpayee.ConfirmationOfPayeeToken)(nil)).
+				IfExists().
+				Exec(ctx)
+			if err != nil {
+				return err
+			}
+
+			_, err = tx.NewDropTable().
+				Model((*payment.Payment)(nil)).
+				IfExists().
+				Exec(ctx)
+			if err != nil {
+				return err
+			}
+
+			_, err = tx.NewDropTable().
 				Model((*token.RefreshToken)(nil)).
 				IfExists().
 				Exec(ctx)
@@ -103,6 +119,14 @@ func init() {
 
 			_, err = tx.NewDropTable().
 				Model((*device.Device)(nil)).
+				IfExists().
+				Exec(ctx)
+			if err != nil {
+				return err
+			}
+
+			_, err = tx.NewDropTable().
+				Model((*merchant.Merchant)(nil)).
 				IfExists().
 				Exec(ctx)
 			if err != nil {
