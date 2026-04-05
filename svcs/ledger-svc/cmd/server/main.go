@@ -44,16 +44,8 @@ func (s service) GetBalances(ctx context.Context, request *v1.GetBalancesRequest
 		Table("total_amount_captured").
 		Where("account_id = ?", request.AccountId).
 		Where("currency_code = ?", a.CurrencyCode).
-		Group("account_id").
 		Scan(ctx, &capturedAmount)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return &v1.GetBalancesResponse{
-				CurrentBalance:   0,
-				AvailableBalance: 0,
-				CurrencyCode:     a.CurrencyCode,
-			}, nil
-		}
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
