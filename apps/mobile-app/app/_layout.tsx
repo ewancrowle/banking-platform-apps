@@ -100,7 +100,7 @@ export default function RootLayout() {
 						title: "Log In",
 					}}
 				/>
-				<Stack.Screen name="home" options={{ headerShown: false }} />
+				<Stack.Screen name="home" options={{ title: "", headerShown: false }} />
 				<Stack.Screen
 					name="new-transfer"
 					options={{

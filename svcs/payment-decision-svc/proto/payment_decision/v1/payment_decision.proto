@@ -22,8 +22,9 @@ message DecidePaymentRequest {
 }
 
 enum Decision {
-  DECLINED = 0;
-  APPROVED = 1;
+  DECISION_UNSPECIFIED = 0;
+  DECISION_DECLINED = 1;
+  DECISION_APPROVED = 2;
 }
 
 message DecidePaymentResponse {

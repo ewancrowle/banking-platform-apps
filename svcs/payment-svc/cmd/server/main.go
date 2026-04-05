@@ -172,10 +172,10 @@ func (s service) AuthorisePayment(ctx context.Context, request *v1.AuthorisePaym
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	if d.Decision == paymentdecisionv1.Decision_DECLINED {
+	if d.Decision == paymentdecisionv1.Decision_DECISION_DECLINED || d.Decision == paymentdecisionv1.Decision_DECISION_UNSPECIFIED {
 		return &v1.AuthorisePaymentResponse{
 			PaymentId:  id.Id,
-			Decision:   v1.Decision_DECLINED,
+			Decision:   v1.Decision_DECISION_DECLINED,
 			DecisionId: d.DecisionId,
 		}, nil
 	}
@@ -200,7 +200,7 @@ func (s service) AuthorisePayment(ctx context.Context, request *v1.AuthorisePaym
 
 	return &v1.AuthorisePaymentResponse{
 		PaymentId:  id.Id,
-		Decision:   v1.Decision_APPROVED,
+		Decision:   v1.Decision_DECISION_DECLINED,
 		DecisionId: d.DecisionId,
 	}, nil
 }

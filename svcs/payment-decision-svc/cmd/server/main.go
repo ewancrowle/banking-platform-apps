@@ -52,15 +52,17 @@ func (s service) DecidePayment(ctx context.Context, request *v1.DecidePaymentReq
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	if balances.AvailableBalance < request.Amount {
-		return &v1.DecidePaymentResponse{
-			Decision:   v1.Decision_DECLINED,
-			DecisionId: id.Id,
-		}, nil
+	if request.Type == "withdrawal" || request.Type == "card" || request.Type == "account_to_account" {
+		if balances.AvailableBalance < request.Amount {
+			return &v1.DecidePaymentResponse{
+				Decision:   v1.Decision_DECISION_DECLINED,
+				DecisionId: id.Id,
+			}, nil
+		}
 	}
 
 	return &v1.DecidePaymentResponse{
-		Decision:   v1.Decision_APPROVED,
+		Decision:   v1.Decision_DECISION_APPROVED,
 		DecisionId: id.Id,
 	}, nil
 }

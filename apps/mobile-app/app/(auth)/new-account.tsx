@@ -395,7 +395,9 @@ export default function NewAccountScreen() {
 				</Section>
 
 				<Section>
-					<ThemedButton onPress={() => form.handleSubmit()}>Next</ThemedButton>
+					<ThemedButton onPress={() => form.handleSubmit()}>
+						Submit
+					</ThemedButton>
 				</Section>
 			</ScrollView>
 		</Pressable>

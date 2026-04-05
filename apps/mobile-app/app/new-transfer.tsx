@@ -1,5 +1,6 @@
 import { formOptions, useForm, useStore } from "@tanstack/react-form";
 import { router } from "expo-router";
+import { Decision } from "protos/payment";
 import {
 	Alert,
 	Keyboard,
@@ -11,9 +12,38 @@ import CurrencyInput from "react-native-currency-input";
 import * as z from "zod";
 import trpc from "@/api/trpc";
 import { Section } from "@/components/section";
+import { ThemedButton } from "@/components/themed-button";
 import { ThemedInput } from "@/components/themed-input";
 import { ThemedText } from "@/components/themed-text";
 import { getTRPCErrorCode } from "@/utils/get-trpc-error-code";
+
+function isValidLuhn(val: string) {
+	if (val.length !== 8 || !/^\d+$/.test(val)) return false;
+
+	const digits = val.split("").map(Number);
+	const checkDigit = digits[7];
+	const payload = digits.slice(0, 7);
+
+	let sum = 0;
+	let double = true;
+
+	for (let i = payload.length - 1; i >= 0; i--) {
+		let d = payload[i];
+
+		if (double) {
+			d *= 2;
+			if (d > 9) {
+				d -= 9;
+			}
+		}
+
+		sum += d;
+		double = !double;
+	}
+
+	const expected = (10 - (sum % 10)) % 10;
+	return checkDigit === expected;
+}
 
 const formSchema = z.object({
 	firstName: z.string().min(1, {
@@ -24,42 +54,12 @@ const formSchema = z.object({
 	}),
 	accountNumber: z
 		.string()
-		.min(1, {
+		.min(8, {
 			message: "Please enter the payee's account number.",
 		})
 		.max(8, {
 			message: "Please enter a valid account number.",
-		})
-		.refine(
-			(val) => {
-				if (val.length !== 8 || !/^\d+$/.test(val)) return false;
-
-				const digits = val.split("").map(Number);
-				const checkDigit = digits[7];
-				const payload = digits.slice(0, 7);
-
-				let sum = 0;
-				let double = true;
-
-				for (let i = payload.length - 1; i >= 0; i--) {
-					let d = payload[i];
-
-					if (double) {
-						d *= 2;
-						if (d > 9) {
-							d -= 9;
-						}
-					}
-
-					sum += d;
-					double = !double;
-				}
-
-				const expected = (10 - (sum % 10)) % 10;
-				return checkDigit === expected;
-			},
-			{ message: "Please enter a valid account number." },
-		),
+		}),
 	amount: z.number().min(1, {
 		message: "Please enter a valid amount.",
 	}),
@@ -87,6 +87,11 @@ export default function NewTransferScreen() {
 	const form = useForm({
 		...formOpts,
 		onSubmit: async ({ value }) => {
+			if (!isValidLuhn(value.accountNumber)) {
+				Alert.alert("Please enter a valid account number.");
+				return;
+			}
+
 			let confirmPayeeToken: string | undefined;
 
 			try {
@@ -109,15 +114,22 @@ export default function NewTransferScreen() {
 			}
 
 			try {
-				await trpc.payment.newTransfer.mutate({
+				const payment = await trpc.payment.newTransfer.mutate({
 					confirmationOfPayeeToken: confirmPayeeToken,
 					amount: value.amount,
 					reference: value.reference,
 				});
-				Alert.alert("Transfer successful!");
+				if (payment.decision.toString() === Decision.DECLINED) {
+					Alert.alert(
+						"Payment declined. Please check your balance or try again later.",
+					);
+					return;
+				}
+				Alert.alert("Payment successful.");
 				form.reset();
 				router.back();
 			} catch (err) {
+				console.log(err);
 				Alert.alert("An error occurred. Please try again later.");
 				return;
 			}
@@ -253,6 +265,10 @@ export default function NewTransferScreen() {
 							</>
 						)}
 					</form.Field>
+				</Section>
+
+				<Section>
+					<ThemedButton onPress={() => form.handleSubmit()}>Next</ThemedButton>
 				</Section>
 			</ScrollView>
 		</Pressable>
