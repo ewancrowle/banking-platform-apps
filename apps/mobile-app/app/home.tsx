@@ -1,7 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import { useEffect } from "react";
+import { router } from "expo-router";
+import { useEffect, useState } from "react";
 import {
+	Alert,
 	FlatList,
 	Pressable,
 	StyleSheet,
@@ -11,9 +13,11 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { getAccount } from "@/api/auth";
+import trpc from "@/api/trpc";
 import { ThemedButton } from "@/components/themed-button";
 import { ThemedText } from "@/components/themed-text";
 import { TransactionItem } from "@/components/transaction-item";
+import { useAuthStore } from "@/store/auth";
 
 const transactions = [
 	{
@@ -42,18 +46,38 @@ const transactions = [
 	},
 ];
 
-import { router } from "expo-router";
-import { useAuthStore } from "@/store/auth";
-
 export default function HomeScreen() {
 	const colorScheme = useColorScheme();
 	const { account, setAccount } = useAuthStore();
+	const [balance, setBalance] = useState<string | null>(null);
 
 	useEffect(() => {
 		if (!account) {
 			getAccount().then((acc) => {
 				if (acc) setAccount(acc);
 			});
+		}
+	}, [account, setAccount]);
+
+	useEffect(() => {
+		if (account) {
+			trpc.balance.getBalances
+				.query()
+				.then((res) => {
+					const amount = Number(res.availableBalance) / 100;
+					setBalance(
+						new Intl.NumberFormat("en-GB", {
+							style: "currency",
+							currency: res.currencyCode || "GBP",
+						}).format(amount),
+					);
+				})
+				.catch((err) => {
+					console.error(err);
+					Alert.alert(
+						"Your balance could not be loaded at this time. Please try again later.",
+					);
+				});
 		}
 	}, [account]);
 
@@ -125,7 +149,7 @@ export default function HomeScreen() {
 									fontWeight: "700",
 								}}
 							>
-								£50.00
+								{balance || "£0.00"}
 							</ThemedText>
 						</View>
 						<View style={styles.buttonContainer}>

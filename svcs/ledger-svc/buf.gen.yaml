@@ -9,6 +9,10 @@ plugins:
     opt:
       - paths=source_relative
       - simple
+  - remote: buf.build/bufbuild/es
+    out: ../../pkgs/protos/gen/ledger
+    opt: target=ts
+    include_imports: true
 inputs:
   - directory: proto
 managed:

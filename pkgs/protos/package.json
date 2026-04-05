@@ -8,6 +8,7 @@
 		"./payment": "./gen/payment/payment/v1/payment_pb.ts",
 		"./merchant": "./gen/merchant/merchant/v1/merchant_pb.ts",
 		"./confirmation_of_payee": "./gen/confirmation_of_payee/confirmation_of_payee/v1/confirmation_of_payee_pb.ts",
+		"./ledger": "./gen/ledger/ledger/v1/ledger_pb.ts",
 		"./*": "./gen/*.ts"
 	},
 	"devDependencies": {
