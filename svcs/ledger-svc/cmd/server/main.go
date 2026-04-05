@@ -58,7 +58,7 @@ func (s service) GetBalances(ctx context.Context, request *v1.GetBalancesRequest
 		Group("payment_id").
 		Having("maxMerge(is_captured) = 0").
 		String()
-	err = s.chDB.NewRaw("SELECT sum(pending_amount) AS total_amount FROM (?)", inner).Scan(ctx, &pendingAmount)
+	err = s.chDB.NewRaw("SELECT sum(pending_amount) AS total_amount FROM ("+inner+")").Scan(ctx, &pendingAmount)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, connect.NewError(connect.CodeInternal, err)
