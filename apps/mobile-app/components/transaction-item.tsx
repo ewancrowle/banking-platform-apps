@@ -1,37 +1,83 @@
 import { Ionicons } from "@expo/vector-icons";
-import {StyleSheet, Text, useColorScheme, View} from "react-native";
-import {ThemedText} from "@/components/themed-text";
+import { StyleSheet, Text, useColorScheme, View } from "react-native";
+import { ThemedText } from "@/components/themed-text";
 
-type TransactionItemProps = {
-	merchant: string;
-	location: string;
-	amount: string;
-	time: string;
-	icon: keyof typeof Ionicons.glyphMap;
+export type Transaction = {
+	id: string;
+	amount: number;
+	currencyCode: string;
+	description: string;
+	type: "deposit" | "withdrawal" | "card" | "account_to_account";
+	status: string;
+	createdAt: string;
+};
+
+type TransactionItemProps = Transaction;
+
+const getIconForType = (
+	type: Transaction["type"],
+): keyof typeof Ionicons.glyphMap => {
+	switch (type) {
+		case "deposit":
+			return "arrow-down";
+		case "withdrawal":
+			return "arrow-up";
+		case "card":
+			return "card-outline";
+		case "account_to_account":
+			return "swap-horizontal-outline";
+		default:
+			return "cash-outline";
+	}
+};
+
+const formatAmount = (amount: number, currencyCode: string) => {
+	return new Intl.NumberFormat("en-GB", {
+		style: "currency",
+		currency: currencyCode || "GBP",
+	}).format(amount / 100);
 };
 
 export function TransactionItem({
-	merchant,
-	location,
 	amount,
-	time,
-	icon,
+	currencyCode,
+	description,
+	type,
+	status,
+	createdAt,
 }: TransactionItemProps) {
 	const colorScheme = useColorScheme();
+	const icon = getIconForType(type);
+	const time = new Date(createdAt).toLocaleDateString("en-GB");
+
+	const typeLabel =
+		{
+			deposit: "Deposit",
+			withdrawal: "Withdrawal",
+			card: "Card Payment",
+			account_to_account: "Transfer",
+		}[type] || type;
 
 	return (
 		<View style={styles.container}>
 			<View style={styles.leftSection}>
 				<View style={styles.iconContainer}>
-					<Ionicons name={icon} size={24} color={colorScheme === "dark" ? "#fff" : "#000"} />
+					<Ionicons
+						name={icon}
+						size={24}
+						color={colorScheme === "dark" ? "#fff" : "#000"}
+					/>
 				</View>
 				<View style={styles.textDetails}>
-					<ThemedText style={styles.title}>{merchant}</ThemedText>
-					<ThemedText style={styles.subtitle}>{location}</ThemedText>
+					<ThemedText style={styles.title}>{description}</ThemedText>
+					<ThemedText style={styles.subtitle}>{typeLabel}</ThemedText>
 				</View>
 			</View>
 			<View style={styles.rightSection}>
-				<ThemedText style={styles.title}>{amount}</ThemedText>
+				<ThemedText style={styles.title}>
+					{type === "deposit" ? "+" : "-"}
+					{formatAmount(amount, currencyCode)}
+				</ThemedText>
 				<ThemedText style={styles.subtitle}>{time}</ThemedText>
 			</View>
 		</View>

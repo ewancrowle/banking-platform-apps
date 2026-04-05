@@ -83,6 +83,7 @@ message Payment {
   string status = 12;
   optional ForeignExchangeData foreign_exchange_data = 13;
   string created_at = 14;
+  optional string other_account_name = 15;
 }
 
 message GetPaymentsResponse {
@@ -95,4 +96,5 @@ service PaymentService {
   rpc CapturePayment(CapturePaymentRequest) returns (google.protobuf.Empty);
   rpc ExpirePayment(ExpirePaymentRequest) returns (google.protobuf.Empty);
   rpc VoidPayment(VoidPaymentRequest) returns (google.protobuf.Empty);
+  rpc GetPayments(GetPaymentsRequest) returns (GetPaymentsResponse);
 }

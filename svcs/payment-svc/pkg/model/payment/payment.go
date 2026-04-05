@@ -98,6 +98,12 @@ func Select(ctx context.Context, db *bun.DB, id int64) (*Payment, error) {
 	return p, err
 }
 
+func SelectByAccountID(ctx context.Context, db *bun.DB, accountID int64) ([]Payment, error) {
+	var payments []Payment
+	err := db.NewSelect().Model(&payments).Where("account_id = ?", accountID).Scan(ctx)
+	return payments, err
+}
+
 func (p *Payment) SetStatus(ctx context.Context, db *bun.DB, status Status) error {
 	_, err := db.NewUpdate().Model(p).Set("status = ?", status).WherePK().Exec(ctx)
 	return err

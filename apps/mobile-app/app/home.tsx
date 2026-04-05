@@ -16,40 +16,17 @@ import { getAccount } from "@/api/auth";
 import trpc from "@/api/trpc";
 import { ThemedButton } from "@/components/themed-button";
 import { ThemedText } from "@/components/themed-text";
-import { TransactionItem } from "@/components/transaction-item";
+import {
+	type Transaction,
+	TransactionItem,
+} from "@/components/transaction-item";
 import { useAuthStore } from "@/store/auth";
-
-const transactions = [
-	{
-		id: "1",
-		merchant: "Salary",
-		location: "Workplace Ltd.",
-		amount: "+£2,500.00",
-		time: "Yesterday",
-		icon: "cash-outline" as const,
-	},
-	{
-		id: "2",
-		merchant: "Starbucks",
-		location: "The Hayes, Cardiff",
-		amount: "-£5.50",
-		time: "3 days ago",
-		icon: "cafe-outline" as const,
-	},
-	{
-		id: "3",
-		merchant: "Transport for Wales",
-		location: "Central Square, Cardiff",
-		amount: "-£3.50",
-		time: "4 days ago",
-		icon: "train-outline" as const,
-	},
-];
 
 export default function HomeScreen() {
 	const colorScheme = useColorScheme();
 	const { account, setAccount } = useAuthStore();
 	const [balance, setBalance] = useState<string | null>(null);
+	const [transactions, setTransactions] = useState<Transaction[]>([]);
 
 	useEffect(() => {
 		if (!account) {
@@ -77,6 +54,32 @@ export default function HomeScreen() {
 					Alert.alert(
 						"Your balance could not be loaded at this time. Please try again later.",
 					);
+				});
+
+			trpc.payment.getPayments
+				.query()
+				.then((res) => {
+					const validTypes = [
+						"deposit",
+						"withdrawal",
+						"card",
+						"account_to_account",
+					];
+					const mapped = res.payments
+						.filter((p) => validTypes.includes(p.type))
+						.map((p) => ({
+							id: p.id.toString(),
+							amount: Number(p.amount),
+							currencyCode: p.currencyCode,
+							description: p.description,
+							type: p.type as Transaction["type"],
+							status: p.status,
+							createdAt: p.createdAt,
+						}));
+					setTransactions(mapped);
+				})
+				.catch((err) => {
+					console.error("Failed to load transactions", err);
 				});
 		}
 	}, [account]);

@@ -225,6 +225,39 @@ func (s service) VoidPayment(ctx context.Context, request *v1.VoidPaymentRequest
 	panic("implement me")
 }
 
+func (s service) GetPayments(ctx context.Context, req *v1.GetPaymentsRequest) (*v1.GetPaymentsResponse, error) {
+	payments, err := payment.SelectByAccountID(ctx, s.db, req.AccountId)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	paymentResponses := make([]*v1.Payment, 0, len(payments))
+	for _, p := range payments {
+		var otherAccountName *string
+		if p.OtherAccountID != nil {
+			name := fmt.Sprintf("%s %s", p.OtherAccount.FirstName, p.OtherAccount.LastName)
+			otherAccountName = &name
+		}
+
+		paymentResponses = append(paymentResponses, &v1.Payment{
+			Id:               p.ID,
+			AccountId:        p.AccountID,
+			PaymentId:        p.PaymentID,
+			MerchantId:       p.MerchantID,
+			OtherAccountId:   p.OtherAccountID,
+			Amount:           p.Amount,
+			CurrencyCode:     p.CurrencyCode,
+			Type:             string(p.Type),
+			Status:           string(p.Status),
+			Description:      p.Description,
+			CreatedAt:        p.CreatedAt.String(),
+			OtherAccountName: otherAccountName,
+		})
+	}
+
+	return &v1.GetPaymentsResponse{Payments: paymentResponses}, nil
+}
+
 func main() {
 	var c config
 	err := envconfig.Process("", &c)
