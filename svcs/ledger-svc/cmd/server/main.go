@@ -68,7 +68,7 @@ func (s service) GetBalances(ctx context.Context, request *v1.GetBalancesRequest
 
 	return &v1.GetBalancesResponse{
 		CurrentBalance:   capturedAmount,
-		AvailableBalance: capturedAmount - pendingAmount,
+		AvailableBalance: capturedAmount + pendingAmount,
 		CurrencyCode:     a.CurrencyCode,
 	}, nil
 }

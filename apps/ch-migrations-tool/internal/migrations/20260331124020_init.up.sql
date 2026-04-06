@@ -2,14 +2,14 @@ CREATE TABLE payments
 (
     id Int64,
     account_id Int64,
-    merchant_id Int64 DEFAULT 0,
-    other_account_id Int64 DEFAULT 0,
+    merchant_id Int64,
+    other_account_id Int64,
     amount Int64,
     currency_code LowCardinality(String),
     type LowCardinality(String),
     status LowCardinality(String),
     description String,
-    created_at DATETIME
+    created_at DateTime64(3, 'UTC')
 ) ENGINE = MergeTree ORDER BY (account_id, created_at, id);
 
 --migration:split
@@ -18,20 +18,30 @@ CREATE TABLE payments_queue
 (
     id Int64,
     account_id Int64,
-    merchant_id Int64,
-    other_account_id Int64,
+    merchant_id Nullable(Int64),
+    other_account_id Nullable(Int64),
     amount Int64,
     currency_code LowCardinality(String),
     type LowCardinality(String),
     status LowCardinality(String),
     description String,
-    created_at DATETIME
+    created_at String
 ) ENGINE = Kafka('redpanda.redpanda.svc.cluster.local:9093', 'payments', 'clickhouse', 'JSONEachRow');
 
 --migration:split
 
 CREATE MATERIALIZED VIEW payments_mv TO payments AS
-SELECT *
+SELECT
+    id,
+    account_id,
+    ifNull(merchant_id, 0) AS merchant_id,
+    ifNull(other_account_id, 0) AS other_account_id,
+    amount,
+    currency_code,
+    type,
+    status,
+    description,
+    parseDateTime64BestEffort(created_at, 3, 'UTC') AS created_at
 FROM payments_queue;
 
 --migration:split
