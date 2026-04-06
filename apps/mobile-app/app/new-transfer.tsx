@@ -119,7 +119,7 @@ export default function NewTransferScreen() {
 					amount: value.amount,
 					reference: value.reference,
 				});
-				if (payment.decision.toString() === Decision.DECLINED) {
+				if (payment.decision === Decision.DECLINED) {
 					Alert.alert(
 						"Payment declined. Please check your balance or try again later.",
 					);
