@@ -106,7 +106,7 @@ func SelectDisplayableByAccountID(ctx context.Context, db *bun.DB, accountID int
 	err := db.NewSelect().
 		Model(&payments).
 		Where("account_id = ?", accountID).
-		Where("status NOT IN (?)", bun.Tuple([]Status{StatusReceived, StatusExpired, StatusVoided})).
+		Where("status NOT IN (?)", []Status{StatusReceived, StatusExpired, StatusVoided}).
 		Scan(ctx)
 	return payments, err
 }
