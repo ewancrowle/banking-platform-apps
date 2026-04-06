@@ -107,6 +107,7 @@ func SelectDisplayableByAccountID(ctx context.Context, db *bun.DB, accountID int
 		Model(&payments).
 		Where("account_id = ?", accountID).
 		Where("status NOT IN (?)", []Status{StatusReceived, StatusExpired, StatusVoided}).
+		Order("created_at DESC").
 		Scan(ctx)
 	return payments, err
 }
