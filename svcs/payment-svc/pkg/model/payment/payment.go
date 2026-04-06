@@ -68,9 +68,6 @@ type Payment struct {
 	ID            int64 `bun:",pk" json:"id"`
 	AccountID     int64 `bun:",notnull" json:"account_id"`
 
-	PaymentID *int64    `json:"payment_id"`
-	Payments  []Payment `bun:"rel:has-many,join:id=payment_id" json:"-"`
-
 	MerchantID *int64             `json:"merchant_id"`
 	Merchant   *merchant.Merchant `bun:"rel:has-one,join:merchant_id=id" json:"-"`
 
@@ -104,7 +101,22 @@ func SelectByAccountID(ctx context.Context, db *bun.DB, accountID int64) ([]Paym
 	return payments, err
 }
 
+func SelectDisplayableByAccountID(ctx context.Context, db *bun.DB, accountID int64) ([]Payment, error) {
+	var payments []Payment
+	err := db.NewSelect().
+		Model(&payments).
+		Where("account_id = ?", accountID).
+		Where("status NOT IN (?)", bun.Tuple([]Status{StatusReceived, StatusExpired, StatusVoided})).
+		Scan(ctx)
+	return payments, err
+}
+
 func (p *Payment) SetStatus(ctx context.Context, db *bun.DB, status Status) error {
 	_, err := db.NewUpdate().Model(p).Set("status = ?", status).WherePK().Exec(ctx)
+	return err
+}
+
+func (p *Payment) SetAmount(ctx context.Context, db *bun.DB, amount int64) error {
+	_, err := db.NewUpdate().Model(p).Set("amount = ?", amount).WherePK().Exec(ctx)
 	return err
 }

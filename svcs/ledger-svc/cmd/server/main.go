@@ -55,7 +55,7 @@ func (s service) GetBalances(ctx context.Context, request *v1.GetBalancesRequest
 		Table("pending_payments").
 		Where("account_id = ?", request.AccountId).
 		Where("currency_code = ?", a.CurrencyCode).
-		Group("payment_id").
+		Group("id").
 		Having("maxMerge(is_captured) = 0").
 		String()
 	err = s.chDB.NewRaw("SELECT sum(pending_amount) AS total_amount FROM ("+inner+")").Scan(ctx, &pendingAmount)

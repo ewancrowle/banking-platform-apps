@@ -211,8 +211,37 @@ func (s service) IncrementPayment(ctx context.Context, request *v1.IncrementPaym
 }
 
 func (s service) CapturePayment(ctx context.Context, request *v1.CapturePaymentRequest) (*emptypb.Empty, error) {
-	//TODO implement me
-	panic("implement me")
+	p, err := payment.Select(ctx, s.db, request.PaymentId)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	if request.ReplacementAmount != nil {
+		p.Amount = p.Type.GetCorrectDirection(*request.ReplacementAmount)
+		if err := p.SetAmount(ctx, s.db, p.Amount); err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+	}
+
+	p.Status = payment.StatusCaptured
+
+	if err := p.SetStatus(ctx, s.db, payment.StatusCaptured); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	b, err := json.Marshal(p)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	if err := s.kafkaCl.ProduceSync(ctx, &kgo.Record{
+		Value: b,
+		Topic: "payments",
+	}).FirstErr(); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	return &emptypb.Empty{}, nil
 }
 
 func (s service) ExpirePayment(ctx context.Context, request *v1.ExpirePaymentRequest) (*emptypb.Empty, error) {
@@ -226,7 +255,7 @@ func (s service) VoidPayment(ctx context.Context, request *v1.VoidPaymentRequest
 }
 
 func (s service) GetPayments(ctx context.Context, req *v1.GetPaymentsRequest) (*v1.GetPaymentsResponse, error) {
-	payments, err := payment.SelectByAccountID(ctx, s.db, req.AccountId)
+	payments, err := payment.SelectDisplayableByAccountID(ctx, s.db, req.AccountId)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -242,7 +271,6 @@ func (s service) GetPayments(ctx context.Context, req *v1.GetPaymentsRequest) (*
 		paymentResponses = append(paymentResponses, &v1.Payment{
 			Id:               p.ID,
 			AccountId:        p.AccountID,
-			PaymentId:        p.PaymentID,
 			MerchantId:       p.MerchantID,
 			OtherAccountId:   p.OtherAccountID,
 			Amount:           p.Amount,

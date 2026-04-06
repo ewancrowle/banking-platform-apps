@@ -2,7 +2,6 @@ CREATE TABLE payments
 (
     id Int64,
     account_id Int64,
-    payment_id Int64 DEFAULT 0,
     merchant_id Int64 DEFAULT 0,
     other_account_id Int64 DEFAULT 0,
     amount Int64,
@@ -11,7 +10,7 @@ CREATE TABLE payments
     status LowCardinality(String),
     description String,
     created_at DATETIME
-) ENGINE = MergeTree ORDER BY (account_id, payment_id, created_at, id);
+) ENGINE = MergeTree ORDER BY (account_id, created_at, id);
 
 --migration:split
 
@@ -19,7 +18,6 @@ CREATE TABLE payments_queue
 (
     id Int64,
     account_id Int64,
-    payment_id Int64,
     merchant_id Int64,
     other_account_id Int64,
     amount Int64,
@@ -62,26 +60,26 @@ WHERE status = 'captured';
 
 CREATE TABLE pending_payments
 (
+    id Int64,
     account_id Int64,
-    payment_id Int64,
     currency_code LowCardinality(String),
     authorised_amount AggregateFunction(sum, Int64),
     incremented_amount AggregateFunction(sum, Int64),
     is_captured AggregateFunction(max, UInt8)
 )
 ENGINE = AggregatingMergeTree
-ORDER BY (account_id, payment_id, currency_code);
+ORDER BY (account_id, id, currency_code);
 
 --migration:split
 
 CREATE MATERIALIZED VIEW pending_payments_mv TO pending_payments
 AS
 SELECT
+    id,
     account_id,
-    payment_id,
     currency_code,
     sumStateIf(amount, status = 'authorised') AS authorised_amount,
     sumStateIf(amount, status = 'incremented') AS incremented_amount,
     maxState(toUInt8(status = 'captured')) AS is_captured
 FROM payments
-GROUP BY account_id, payment_id, currency_code;
+GROUP BY account_id, id, currency_code;
