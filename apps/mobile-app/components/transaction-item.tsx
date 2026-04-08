@@ -1,7 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "@react-navigation/native";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import { StyleSheet, useColorScheme, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { ThemedText } from "@/components/themed-text";
 
 export type Transaction = {
@@ -50,7 +51,7 @@ export function TransactionItem({
 	status,
 	createdAt,
 }: TransactionItemProps) {
-	const colorScheme = useColorScheme();
+	const theme = useTheme();
 	const icon = getIconForType(type);
 	let time = dayjs(`${createdAt.split(".")[0]}Z`).fromNow();
 	let typeLabel =
@@ -79,12 +80,12 @@ export function TransactionItem({
 			gap: 12,
 		},
 		iconContainer: {
-			width: 48,
-			height: 48,
-			borderRadius: 24,
+			width: 40,
+			height: 40,
+			borderRadius: 20,
 			justifyContent: "center",
 			alignItems: "center",
-			backgroundColor: colorScheme === "dark" ? "#222" : "#e4e4e4",
+			backgroundColor: theme.colors.card,
 		},
 		textDetails: {
 			gap: 2,
@@ -97,7 +98,6 @@ export function TransactionItem({
 			gap: 2,
 		},
 		title: {
-			fontSize: 16,
 			fontWeight: "600",
 		},
 	});
@@ -106,11 +106,7 @@ export function TransactionItem({
 		<View style={styles.container}>
 			<View style={styles.leftSection}>
 				<View style={styles.iconContainer}>
-					<Ionicons
-						name={icon}
-						size={24}
-						color={colorScheme === "dark" ? "#fff" : "#000"}
-					/>
+					<Ionicons name={icon} size={20} color={theme.colors.text} />
 				</View>
 				<View style={styles.textDetails}>
 					<ThemedText style={styles.title}>{description}</ThemedText>

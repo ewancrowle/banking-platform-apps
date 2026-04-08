@@ -1,13 +1,8 @@
+import { useTheme } from "@react-navigation/native";
 import { formOptions, useForm, useStore } from "@tanstack/react-form";
 import { router } from "expo-router";
 import { Decision } from "protos/payment";
-import {
-	Alert,
-	Keyboard,
-	Pressable,
-	ScrollView,
-	useColorScheme,
-} from "react-native";
+import { Alert, Keyboard, Pressable, ScrollView } from "react-native";
 import CurrencyInput from "react-native-currency-input";
 import * as z from "zod";
 import trpc from "@/api/trpc";
@@ -16,7 +11,7 @@ import { ThemedButton } from "@/components/themed-button";
 import { ThemedText } from "@/components/themed-text";
 
 const formSchema = z.object({
-	amount: z.number().min(1, {
+	amount: z.number().min(0.01, {
 		message: "Please enter a valid amount.",
 	}),
 });
@@ -31,14 +26,14 @@ const formOpts = formOptions({
 });
 
 export default function NewDepositScreen() {
-	const colorScheme = useColorScheme();
+	const theme = useTheme();
 
 	const form = useForm({
 		...formOpts,
 		onSubmit: async ({ value }) => {
 			try {
 				const payment = await trpc.payment.newDeposit.mutate({
-					amount: value.amount,
+					amount: value.amount * 100,
 				});
 				if (payment.decision === Decision.DECLINED) {
 					Alert.alert("Deposit declined. Please try again later.");
@@ -74,8 +69,8 @@ export default function NewDepositScreen() {
 									precision={2}
 									placeholder="Amount"
 									style={{
-										color: colorScheme === "dark" ? "#fff" : "#000",
-										backgroundColor: colorScheme === "dark" ? "#222" : "#fff",
+										color: theme.colors.text,
+										backgroundColor: theme.colors.card,
 										borderRadius: 8,
 										fontSize: 16,
 										padding: 12,

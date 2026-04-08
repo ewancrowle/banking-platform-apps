@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { getAccount, refreshTokens } from "@/api/auth";
 import { useAuthStore } from "@/store/auth";
 import "react-native-reanimated";
+import { ActionSheetProvider } from "@expo/react-native-action-sheet";
 import {
 	DarkTheme,
 	DefaultTheme,
@@ -84,33 +85,38 @@ export default function RootLayout() {
 	if (!isReady) return null;
 
 	return (
-		<ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-			<Stack>
-				<Stack.Screen
-					name="(auth)/index"
-					options={{ title: "", headerShown: false }}
-				/>
-				<Stack.Screen
-					name="(auth)/new-account"
-					options={{
-						title: "Open a New Account",
-					}}
-				/>
-				<Stack.Screen
-					name="(auth)/login"
-					options={{
-						title: "Log In",
-					}}
-				/>
-				<Stack.Screen name="home" options={{ title: "", headerShown: false }} />
-				<Stack.Screen
-					name="new-transfer"
-					options={{
-						title: "New Transfer",
-					}}
-				/>
-			</Stack>
-			<StatusBar style="auto" />
-		</ThemeProvider>
+		<ActionSheetProvider>
+			<ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+				<Stack>
+					<Stack.Screen
+						name="(auth)/index"
+						options={{ title: "", headerShown: false }}
+					/>
+					<Stack.Screen
+						name="(auth)/new-account"
+						options={{
+							title: "Open a New Account",
+						}}
+					/>
+					<Stack.Screen
+						name="(auth)/login"
+						options={{
+							title: "Log In",
+						}}
+					/>
+					<Stack.Screen
+						name="home"
+						options={{ title: "", headerShown: false }}
+					/>
+					<Stack.Screen
+						name="new-transfer"
+						options={{
+							title: "New Transfer",
+						}}
+					/>
+				</Stack>
+				<StatusBar style="auto" />
+			</ThemeProvider>
+		</ActionSheetProvider>
 	);
 }

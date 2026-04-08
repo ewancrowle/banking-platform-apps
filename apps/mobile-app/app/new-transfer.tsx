@@ -1,13 +1,8 @@
+import { useTheme } from "@react-navigation/native";
 import { formOptions, useForm, useStore } from "@tanstack/react-form";
 import { router } from "expo-router";
 import { Decision } from "protos/payment";
-import {
-	Alert,
-	Keyboard,
-	Pressable,
-	ScrollView,
-	useColorScheme,
-} from "react-native";
+import { Alert, Keyboard, Pressable, ScrollView } from "react-native";
 import CurrencyInput from "react-native-currency-input";
 import * as z from "zod";
 import trpc from "@/api/trpc";
@@ -82,7 +77,7 @@ const formOpts = formOptions({
 });
 
 export default function NewTransferScreen() {
-	const colorScheme = useColorScheme();
+	const theme = useTheme();
 
 	const form = useForm({
 		...formOpts,
@@ -228,8 +223,8 @@ export default function NewTransferScreen() {
 									precision={2}
 									placeholder="Amount"
 									style={{
-										color: colorScheme === "dark" ? "#fff" : "#000",
-										backgroundColor: colorScheme === "dark" ? "#222" : "#fff",
+										color: theme.colors.text,
+										backgroundColor: theme.colors.card,
 										borderRadius: 8,
 										fontSize: 16,
 										padding: 12,

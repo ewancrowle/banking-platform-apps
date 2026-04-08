@@ -14,20 +14,21 @@ export default function AuthScreen() {
 				<View style={styles.section}>
 					<Text style={styles.title}>Welcome</Text>
 					<Text style={styles.subtitle}>
-						The bank you&apos;ll actually like. Experience banking that stays out
-						of your way.
+						The bank you&apos;ll actually like. Experience banking that stays
+						out of your way.
 					</Text>
 				</View>
 				<View style={styles.section}>
 					<ThemedButton
-						variant="dark"
+						backgroundColor="#fff"
+						textColor="#000"
 						onPress={() => router.push("/new-account")}
 					>
 						Open a New Account
 					</ThemedButton>
 					<ThemedButton
-						variant="ghost"
 						onPress={() => router.push("/login")}
+						backgroundColor="transparent"
 						textColor="#fff"
 					>
 						Log In as a Returning Customer

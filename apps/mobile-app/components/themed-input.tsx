@@ -1,19 +1,15 @@
-import {
-	Text,
-	TextInput,
-	type TextInputProps,
-	useColorScheme,
-} from "react-native";
+import { useTheme } from "@react-navigation/native";
+import { TextInput, type TextInputProps } from "react-native";
 
 export function ThemedInput({ style, ...props }: TextInputProps) {
-	const colorScheme = useColorScheme();
+	const theme = useTheme();
 
 	return (
 		<TextInput
 			style={[
 				{
-					color: colorScheme === "dark" ? "#fff" : "#000",
-					backgroundColor: colorScheme === "dark" ? "#222" : "#fff",
+					color: theme.colors.text,
+					backgroundColor: theme.colors.card,
 					borderRadius: 8,
 					fontSize: 16,
 					padding: 12,

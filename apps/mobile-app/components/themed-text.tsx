@@ -1,13 +1,14 @@
-import { StyleSheet, Text, type TextProps, useColorScheme } from "react-native";
+import { useTheme } from "@react-navigation/native";
+import { Text, type TextProps } from "react-native";
 
 export function ThemedText({ style, ...props }: TextProps) {
-	const colorScheme = useColorScheme();
+	const theme = useTheme();
 
 	return (
 		<Text
 			style={[
 				{
-					color: colorScheme === "dark" ? "#fff" : "#000",
+					color: theme.colors.text,
 					fontSize: 16,
 				},
 				style,

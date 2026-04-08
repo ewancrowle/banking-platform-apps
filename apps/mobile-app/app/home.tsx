@@ -1,32 +1,37 @@
+import { useActionSheet } from "@expo/react-native-action-sheet";
 import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "@react-navigation/native";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import {
-	Alert,
-	FlatList,
-	Pressable,
-	StyleSheet,
-	Text,
-	useColorScheme,
-	View,
-} from "react-native";
+import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { getAccount } from "@/api/auth";
 import trpc from "@/api/trpc";
 import { ThemedButton } from "@/components/themed-button";
 import { ThemedText } from "@/components/themed-text";
-import {
-	type Transaction,
-	TransactionItem,
-} from "@/components/transaction-item";
+import type { Transaction } from "@/components/transaction-item";
+import { TransactionList } from "@/components/transaction-list";
 import { useAuthStore } from "@/store/auth";
 
 export default function HomeScreen() {
-	const colorScheme = useColorScheme();
-	const { account, setAccount } = useAuthStore();
+	const theme = useTheme();
+	const { showActionSheetWithOptions } = useActionSheet();
+	const { account, setAccount, reset } = useAuthStore();
 	const [balance, setBalance] = useState<string | null>(null);
 	const [transactions, setTransactions] = useState<Transaction[]>([]);
+
+	const onPressHelp = () => {
+		showActionSheetWithOptions(
+			{
+				options: ["Log out"],
+				destructiveButtonIndex: 0,
+			},
+			async () => {
+				await reset();
+			},
+		);
+	};
 
 	useEffect(() => {
 		if (!account) {
@@ -90,11 +95,8 @@ export default function HomeScreen() {
 
 	return (
 		<SafeAreaView style={styles.container}>
-			<FlatList
-				data={transactions}
-				keyExtractor={(item) => item.id}
-				contentContainerStyle={styles.listContent}
-				showsVerticalScrollIndicator={false}
+			<TransactionList
+				transactions={transactions}
 				ListHeaderComponent={
 					<View style={styles.headerContainer}>
 						<View style={styles.topBar}>
@@ -111,10 +113,12 @@ export default function HomeScreen() {
 							</Pressable>
 							<ThemedButton
 								icon="help-buoy-outline"
-								variant="ghost"
+								textColor={theme.colors.text}
+								backgroundColor="transparent"
 								style={{
 									width: "auto",
 								}}
+								onPress={onPressHelp}
 							>
 								Help
 							</ThemedButton>
@@ -132,7 +136,7 @@ export default function HomeScreen() {
 								<Ionicons
 									name="card-outline"
 									size={16}
-									color={colorScheme === "dark" ? "#fff" : "#000"}
+									color={theme.colors.text}
 								/>
 								<ThemedText>{account?.id.toString().slice(0, 8)}</ThemedText>
 							</View>
@@ -148,7 +152,7 @@ export default function HomeScreen() {
 							</ThemedText>
 							<ThemedText
 								style={{
-									fontSize: 32,
+									fontSize: 36,
 									fontWeight: "700",
 								}}
 							>
@@ -181,11 +185,6 @@ export default function HomeScreen() {
 						</ThemedText>
 					</View>
 				}
-				renderItem={({ item }) => (
-					<View style={styles.itemWrapper}>
-						<TransactionItem {...item} />
-					</View>
-				)}
 			/>
 		</SafeAreaView>
 	);
@@ -195,14 +194,9 @@ const styles = StyleSheet.create({
 	container: {
 		flex: 1,
 	},
-	listContent: {
-		flexGrow: 1,
-		paddingBottom: 40,
-	},
 	headerContainer: {
-		paddingHorizontal: 24,
+		paddingHorizontal: 16,
 		gap: 24,
-		marginBottom: 12,
 	},
 	accountInfoContainer: {
 		alignItems: "flex-start",
@@ -224,10 +218,6 @@ const styles = StyleSheet.create({
 	flexButton: {
 		flex: 1,
 		width: "auto",
-	},
-	itemWrapper: {
-		paddingHorizontal: 24,
-		marginVertical: 6,
 	},
 	topBar: {
 		flexDirection: "row",
