@@ -93,7 +93,7 @@ export default function NewCardPayment() {
 											...merchants.map((m) => m.shortDescriptor),
 											"Cancel",
 										];
-										const cancelButtonIndex = merchants.length;
+										const cancelButtonIndex = merchants.length + 1;
 
 										showActionSheetWithOptions(
 											{
@@ -103,7 +103,7 @@ export default function NewCardPayment() {
 											(selectedIndex) => {
 												if (
 													selectedIndex !== undefined &&
-													selectedIndex !== cancelButtonIndex
+													selectedIndex !== merchants.length
 												) {
 													field.handleChange(merchants[selectedIndex].id);
 												}

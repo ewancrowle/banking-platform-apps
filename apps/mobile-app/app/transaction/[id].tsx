@@ -134,7 +134,7 @@ export default function TransactionInfo() {
 					/>
 				</View>
 				<ThemedText style={styles.amount}>
-					{type === "deposit" ? "+" : "-"}
+					{type === "deposit" && "+"}
 					{formattedAmount}
 				</ThemedText>
 				<ThemedText style={styles.description}>{description}</ThemedText>

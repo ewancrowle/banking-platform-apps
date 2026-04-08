@@ -92,6 +92,7 @@ export default function Home() {
 					setTransactions(
 						res.payments.filter((p) => validTypes.includes(p.type)),
 					);
+					console.log(res.payments);
 				})
 				.catch((err) => {
 					console.error("Failed to load transactions", err);

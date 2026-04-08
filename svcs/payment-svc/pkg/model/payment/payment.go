@@ -91,13 +91,13 @@ func (p *Payment) Insert(ctx context.Context, db *bun.DB) error {
 
 func Select(ctx context.Context, db *bun.DB, id int64) (*Payment, error) {
 	p := new(Payment)
-	err := db.NewSelect().Model(p).Where("id = ?", id).Scan(ctx)
+	err := db.NewSelect().Model(p).Where("id = ?", id).Relation("Merchant").Scan(ctx)
 	return p, err
 }
 
 func SelectByAccountID(ctx context.Context, db *bun.DB, accountID int64) ([]Payment, error) {
 	var payments []Payment
-	err := db.NewSelect().Model(&payments).Where("account_id = ?", accountID).Scan(ctx)
+	err := db.NewSelect().Model(&payments).Where("account_id = ?", accountID).Relation("Merchant").Scan(ctx)
 	return payments, err
 }
 
@@ -108,6 +108,7 @@ func SelectDisplayableByAccountID(ctx context.Context, db *bun.DB, accountID int
 		Where("account_id = ?", accountID).
 		Where("status NOT IN (?)", []Status{StatusReceived, StatusExpired, StatusVoided}).
 		Order("created_at DESC").
+		Relation("Merchant").
 		Scan(ctx)
 	return payments, err
 }

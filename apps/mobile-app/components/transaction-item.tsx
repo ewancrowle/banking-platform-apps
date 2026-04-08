@@ -120,7 +120,7 @@ export function TransactionItem(payment: TransactionItemProps) {
 			</View>
 			<View style={styles.rightSection}>
 				<ThemedText style={styles.title}>
-					{type === "deposit" ? "+" : "-"}
+					{type === "deposit" && "+"}
 					{formatAmount(Number(amount), currencyCode)}
 				</ThemedText>
 				<ThemedText
