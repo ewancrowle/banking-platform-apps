@@ -48,7 +48,9 @@ export default function RootLayout() {
 							account = await getAccount();
 						}
 
-						await reset();
+						if (!account) {
+							await reset();
+						}
 					}
 
 					if (account) {
@@ -65,7 +67,7 @@ export default function RootLayout() {
 		};
 
 		initAuth();
-	}, []);
+	}, [reset, setAccount, setTokens]);
 
 	useEffect(() => {
 		if (!isReady) return;
@@ -77,7 +79,7 @@ export default function RootLayout() {
 		} else if (!accessToken && !inAuthGroup) {
 			router.replace("/(auth)");
 		}
-	}, [accessToken, isReady, segments]);
+	}, [accessToken, isReady, router, segments]);
 
 	if (!isReady) return null;
 
