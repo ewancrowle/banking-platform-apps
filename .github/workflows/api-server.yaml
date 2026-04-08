@@ -29,7 +29,7 @@ jobs:
       - run: buf generate svcs/confirmation-of-payee-svc --include-imports --template svcs/confirmation-of-payee-svc/buf.gen.yaml --output svcs/confirmation-of-payee-svc
       - run: buf generate svcs/payment-svc --include-imports --template svcs/payment-svc/buf.gen.yaml --output svcs/payment-svc
       - run: buf generate svcs/ledger-svc --include-imports --template svcs/ledger-svc/buf.gen.yaml --output svcs/ledger-svc
-      - run: buf generate apps/merchant-svc --include-imports --template apps/merchant-svc/buf.gen.yaml --output apps/merchant-svc
+      - run: buf generate svcs/merchant-svc --include-imports --template svcs/merchant-svc/buf.gen.yaml --output svcs/merchant-svc
       - uses: oven-sh/setup-bun@v2
       - name: Install dependencies
         run: bun install
