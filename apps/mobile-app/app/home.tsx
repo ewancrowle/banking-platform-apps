@@ -3,6 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@react-navigation/native";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
+import type { Payment } from "protos/payment";
 import { useEffect, useState } from "react";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -10,25 +11,43 @@ import { getAccount } from "@/api/auth";
 import trpc from "@/api/trpc";
 import { ThemedButton } from "@/components/themed-button";
 import { ThemedText } from "@/components/themed-text";
-import type { Transaction } from "@/components/transaction-item";
 import { TransactionList } from "@/components/transaction-list";
 import { useAuthStore } from "@/store/auth";
 
-export default function HomeScreen() {
+export default function Home() {
 	const theme = useTheme();
 	const { showActionSheetWithOptions } = useActionSheet();
 	const { account, setAccount, reset } = useAuthStore();
 	const [balance, setBalance] = useState<string | null>(null);
-	const [transactions, setTransactions] = useState<Transaction[]>([]);
+	const [transactions, setTransactions] = useState<Payment[]>([]);
 
 	const onPressHelp = () => {
 		showActionSheetWithOptions(
 			{
-				options: ["Log out"],
+				options: ["Log out", "Cancel"],
+				cancelButtonIndex: 2,
 				destructiveButtonIndex: 0,
 			},
-			async () => {
-				await reset();
+			async (selectedIndex) => {
+				if (selectedIndex === 0) {
+					await reset();
+				}
+			},
+		);
+	};
+
+	const onPressSpendMoney = () => {
+		showActionSheetWithOptions(
+			{
+				options: ["New transfer", "New card payment", "Cancel"],
+				cancelButtonIndex: 3,
+			},
+			(selectedIndex) => {
+				if (selectedIndex === 0) {
+					router.push("/new-transfer");
+				} else if (selectedIndex === 1) {
+					router.push("/new-card-payment");
+				}
 			},
 		);
 	};
@@ -70,18 +89,9 @@ export default function HomeScreen() {
 						"card",
 						"account_to_account",
 					];
-					const mapped = res.payments
-						.filter((p) => validTypes.includes(p.type))
-						.map((p) => ({
-							id: p.id.toString(),
-							amount: Number(p.amount),
-							currencyCode: p.currencyCode,
-							description: p.description,
-							type: p.type as Transaction["type"],
-							status: p.status,
-							createdAt: p.createdAt,
-						}));
-					setTransactions(mapped);
+					setTransactions(
+						res.payments.filter((p) => validTypes.includes(p.type)),
+					);
 				})
 				.catch((err) => {
 					console.error("Failed to load transactions", err);
@@ -165,14 +175,14 @@ export default function HomeScreen() {
 								style={styles.flexButton}
 								onPress={() => router.push("/new-deposit")}
 							>
-								Add money
+								Deposit money
 							</ThemedButton>
 							<ThemedButton
 								icon="arrow-forward"
 								style={styles.flexButton}
-								onPress={() => router.push("/new-transfer")}
+								onPress={onPressSpendMoney}
 							>
-								Pay someone
+								Spend money
 							</ThemedButton>
 						</View>
 						<ThemedText

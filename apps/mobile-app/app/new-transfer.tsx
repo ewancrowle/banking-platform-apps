@@ -76,7 +76,7 @@ const formOpts = formOptions({
 	},
 });
 
-export default function NewTransferScreen() {
+export default function NewTransfer() {
 	const theme = useTheme();
 
 	const form = useForm({
@@ -111,7 +111,7 @@ export default function NewTransferScreen() {
 			try {
 				const payment = await trpc.payment.newTransfer.mutate({
 					confirmationOfPayeeToken: confirmPayeeToken,
-					amount: value.amount,
+					amount: value.amount * 100,
 					reference: value.reference,
 				});
 				if (payment.decision === Decision.DECLINED) {
@@ -135,137 +135,135 @@ export default function NewTransferScreen() {
 
 	return (
 		<Pressable style={{ flex: 1, padding: 16 }} onPress={Keyboard.dismiss}>
-			<ScrollView showsVerticalScrollIndicator={false}>
-				<ThemedText>Transfer money to someone you know.</ThemedText>
+			<ThemedText>Transfer money to someone you know.</ThemedText>
 
-				<Section title="Enter the payee's name">
-					<form.Field name="firstName">
-						{(field) => (
-							<>
-								<ThemedInput
-									placeholder="First Name"
-									value={field.state.value}
-									onChangeText={field.handleChange}
-									textContentType="givenName"
-									autoCapitalize="words"
-									autoComplete="name-given"
-									autoCorrect={false}
-									keyboardType="default"
-								/>
-								{formErrorMap.onChange?.firstName && (
-									<ThemedText style={{ color: "red", marginTop: 4 }}>
-										{formErrorMap.onChange.firstName
-											.map((issue) => issue.message)
-											.join(", ")}
-									</ThemedText>
-								)}
-							</>
-						)}
-					</form.Field>
+			<Section title="Enter the payee's name">
+				<form.Field name="firstName">
+					{(field) => (
+						<>
+							<ThemedInput
+								placeholder="First Name"
+								value={field.state.value}
+								onChangeText={field.handleChange}
+								textContentType="givenName"
+								autoCapitalize="words"
+								autoComplete="name-given"
+								autoCorrect={false}
+								keyboardType="default"
+							/>
+							{formErrorMap.onChange?.firstName && (
+								<ThemedText style={{ color: "red", marginTop: 4 }}>
+									{formErrorMap.onChange.firstName
+										.map((issue) => issue.message)
+										.join(", ")}
+								</ThemedText>
+							)}
+						</>
+					)}
+				</form.Field>
 
-					<form.Field name="lastName">
-						{(field) => (
-							<>
-								<ThemedInput
-									placeholder="Last Name"
-									value={field.state.value}
-									onChangeText={field.handleChange}
-									textContentType="familyName"
-									autoCapitalize="words"
-									autoComplete="name-family"
-									autoCorrect={false}
-									keyboardType="default"
-								/>
-								{formErrorMap.onChange?.lastName && (
-									<ThemedText style={{ color: "red", marginTop: 4 }}>
-										{formErrorMap.onChange.lastName
-											.map((issue) => issue.message)
-											.join(", ")}
-									</ThemedText>
-								)}
-							</>
-						)}
-					</form.Field>
-				</Section>
+				<form.Field name="lastName">
+					{(field) => (
+						<>
+							<ThemedInput
+								placeholder="Last Name"
+								value={field.state.value}
+								onChangeText={field.handleChange}
+								textContentType="familyName"
+								autoCapitalize="words"
+								autoComplete="name-family"
+								autoCorrect={false}
+								keyboardType="default"
+							/>
+							{formErrorMap.onChange?.lastName && (
+								<ThemedText style={{ color: "red", marginTop: 4 }}>
+									{formErrorMap.onChange.lastName
+										.map((issue) => issue.message)
+										.join(", ")}
+								</ThemedText>
+							)}
+						</>
+					)}
+				</form.Field>
+			</Section>
 
-				<Section title="Enter the payee's account info">
-					<form.Field name="accountNumber" asyncDebounceMs={300}>
-						{(field) => (
-							<>
-								<ThemedInput
-									placeholder="Account Number"
-									value={field.state.value}
-									onChangeText={field.handleChange}
-									autoCorrect={false}
-									keyboardType="numeric"
-								/>
-								{formErrorMap.onChange?.accountNumber && (
-									<ThemedText style={{ color: "red", marginTop: 4 }}>
-										{formErrorMap.onChange.accountNumber
-											.map((issue) => issue.message)
-											.join(", ")}
-									</ThemedText>
-								)}
-							</>
-						)}
-					</form.Field>
-				</Section>
+			<Section title="Enter the payee's account info">
+				<form.Field name="accountNumber" asyncDebounceMs={300}>
+					{(field) => (
+						<>
+							<ThemedInput
+								placeholder="Account Number"
+								value={field.state.value}
+								onChangeText={field.handleChange}
+								autoCorrect={false}
+								keyboardType="numeric"
+							/>
+							{formErrorMap.onChange?.accountNumber && (
+								<ThemedText style={{ color: "red", marginTop: 4 }}>
+									{formErrorMap.onChange.accountNumber
+										.map((issue) => issue.message)
+										.join(", ")}
+								</ThemedText>
+							)}
+						</>
+					)}
+				</form.Field>
+			</Section>
 
-				<Section title="Enter the payment info">
-					<form.Field name="amount">
-						{(field) => (
-							<>
-								<CurrencyInput
-									value={field.state.value}
-									onChangeValue={(value) => field.handleChange(value || 0)}
-									prefix="£"
-									separator="."
-									precision={2}
-									placeholder="Amount"
-									style={{
-										color: theme.colors.text,
-										backgroundColor: theme.colors.card,
-										borderRadius: 8,
-										fontSize: 16,
-										padding: 12,
-									}}
-								/>
-								{formErrorMap.onChange?.amount && (
-									<ThemedText style={{ color: "red", marginTop: 4 }}>
-										{formErrorMap.onChange.amount
-											.map((issue) => issue.message)
-											.join(", ")}
-									</ThemedText>
-								)}
-							</>
-						)}
-					</form.Field>
-					<form.Field name="reference">
-						{(field) => (
-							<>
-								<ThemedInput
-									placeholder="What&apos;s this payment for?"
-									value={field.state.value}
-									onChangeText={field.handleChange}
-									autoCorrect={false}
-									keyboardType="default"
-								/>
-								{formErrorMap.onChange?.reference && (
-									<ThemedText style={{ color: "red", marginTop: 4 }}>
-										{formErrorMap.onChange.reference
-											.map((issue) => issue.message)
-											.join(", ")}
-									</ThemedText>
-								)}
-							</>
-						)}
-					</form.Field>
-				</Section>
+			<Section title="Enter the payment info">
+				<form.Field name="amount">
+					{(field) => (
+						<>
+							<CurrencyInput
+								value={field.state.value}
+								onChangeValue={(value) => field.handleChange(value || 0)}
+								prefix="£"
+								separator="."
+								precision={2}
+								placeholder="Amount"
+								style={{
+									color: theme.colors.text,
+									backgroundColor: theme.colors.card,
+									borderRadius: 8,
+									fontSize: 16,
+									padding: 12,
+								}}
+							/>
+							{formErrorMap.onChange?.amount && (
+								<ThemedText style={{ color: "red", marginTop: 4 }}>
+									{formErrorMap.onChange.amount
+										.map((issue) => issue.message)
+										.join(", ")}
+								</ThemedText>
+							)}
+						</>
+					)}
+				</form.Field>
+				<form.Field name="reference">
+					{(field) => (
+						<>
+							<ThemedInput
+								placeholder="What&apos;s this payment for?"
+								value={field.state.value}
+								onChangeText={field.handleChange}
+								autoCorrect={false}
+								keyboardType="default"
+							/>
+							{formErrorMap.onChange?.reference && (
+								<ThemedText style={{ color: "red", marginTop: 4 }}>
+									{formErrorMap.onChange.reference
+										.map((issue) => issue.message)
+										.join(", ")}
+								</ThemedText>
+							)}
+						</>
+					)}
+				</form.Field>
+			</Section>
 
-				<Section>
-					<ThemedButton onPress={() => form.handleSubmit()}>Next</ThemedButton>
-				</Section>
-			</ScrollView>
+			<Section>
+				<ThemedButton onPress={() => form.handleSubmit()}>Next</ThemedButton>
+			</Section>
 		</Pressable>
 	);
 }

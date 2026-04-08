@@ -334,6 +334,23 @@ func (s service) GetPayments(ctx context.Context, req *v1.GetPaymentsRequest) (*
 			otherAccountName = &name
 		}
 
+		var merchant *v1.Merchant
+		if p.Merchant != nil {
+			merchant = &v1.Merchant{
+				Id:              p.Merchant.ID,
+				Descriptor_:     p.Merchant.Descriptor,
+				ShortDescriptor: p.Merchant.ShortDescriptor,
+				Mcc:             p.Merchant.MCC,
+				Line_1:          p.Merchant.Line1,
+				Line_2:          p.Merchant.Line2,
+				Town:            p.Merchant.Town,
+				Postcode:        p.Merchant.Postcode,
+				CountryCode:     p.Merchant.CountryCode,
+				CreatedAt:       p.Merchant.CreatedAt.String(),
+				UpdatedAt:       p.Merchant.UpdatedAt.String(),
+			}
+		}
+
 		paymentResponses = append(paymentResponses, &v1.Payment{
 			Id:               p.ID,
 			AccountId:        p.AccountID,
@@ -346,6 +363,7 @@ func (s service) GetPayments(ctx context.Context, req *v1.GetPaymentsRequest) (*
 			Description:      p.Description,
 			CreatedAt:        p.CreatedAt.String(),
 			OtherAccountName: otherAccountName,
+			Merchant:         merchant,
 		})
 	}
 

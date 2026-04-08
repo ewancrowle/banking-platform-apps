@@ -25,7 +25,7 @@ const formOpts = formOptions({
 	},
 });
 
-export default function NewDepositScreen() {
+export default function NewDeposit() {
 	const theme = useTheme();
 
 	const form = useForm({
@@ -54,46 +54,42 @@ export default function NewDepositScreen() {
 
 	return (
 		<Pressable style={{ flex: 1, padding: 16 }} onPress={Keyboard.dismiss}>
-			<ScrollView showsVerticalScrollIndicator={false}>
-				<ThemedText>Add money to your account.</ThemedText>
+			<ThemedText>Add money to your account.</ThemedText>
 
-				<Section title="Enter the deposit amount">
-					<form.Field name="amount">
-						{(field) => (
-							<>
-								<CurrencyInput
-									value={field.state.value}
-									onChangeValue={(value) => field.handleChange(value || 0)}
-									prefix="£"
-									separator="."
-									precision={2}
-									placeholder="Amount"
-									style={{
-										color: theme.colors.text,
-										backgroundColor: theme.colors.card,
-										borderRadius: 8,
-										fontSize: 16,
-										padding: 12,
-									}}
-								/>
-								{formErrorMap.onChange?.amount && (
-									<ThemedText style={{ color: "red", marginTop: 4 }}>
-										{formErrorMap.onChange.amount
-											.map((issue) => issue.message)
-											.join(", ")}
-									</ThemedText>
-								)}
-							</>
-						)}
-					</form.Field>
-				</Section>
+			<Section title="Enter the deposit amount">
+				<form.Field name="amount">
+					{(field) => (
+						<>
+							<CurrencyInput
+								value={field.state.value}
+								onChangeValue={(value) => field.handleChange(value || 0)}
+								prefix="£"
+								separator="."
+								precision={2}
+								placeholder="Amount"
+								style={{
+									color: theme.colors.text,
+									backgroundColor: theme.colors.card,
+									borderRadius: 8,
+									fontSize: 16,
+									padding: 12,
+								}}
+							/>
+							{formErrorMap.onChange?.amount && (
+								<ThemedText style={{ color: "red", marginTop: 4 }}>
+									{formErrorMap.onChange.amount
+										.map((issue) => issue.message)
+										.join(", ")}
+								</ThemedText>
+							)}
+						</>
+					)}
+				</form.Field>
+			</Section>
 
-				<Section>
-					<ThemedButton onPress={() => form.handleSubmit()}>
-						Deposit
-					</ThemedButton>
-				</Section>
-			</ScrollView>
+			<Section>
+				<ThemedButton onPress={() => form.handleSubmit()}>Deposit</ThemedButton>
+			</Section>
 		</Pressable>
 	);
 }

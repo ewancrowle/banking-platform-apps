@@ -72,7 +72,7 @@ const formOpts = formOptions({
 	},
 });
 
-export default function NewAccountScreen() {
+export default function NewAccount() {
 	const form = useForm({
 		...formOpts,
 		onSubmit: async ({ value }) => {

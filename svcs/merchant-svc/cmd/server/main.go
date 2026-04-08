@@ -62,7 +62,7 @@ func (s service) CreateMerchant(ctx context.Context, request *v1.CreateMerchantR
 	return &v1.CreateMerchantResponse{Id: id.Id}, nil
 }
 
-func (s service) GetMerchant(ctx context.Context, request *v1.GetMerchantRequest) (*v1.GetMerchantResponse, error) {
+func (s service) GetMerchant(ctx context.Context, request *v1.GetMerchantRequest) (*v1.Merchant, error) {
 	m, err := merchant.Select(ctx, s.db, request.Id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -71,7 +71,7 @@ func (s service) GetMerchant(ctx context.Context, request *v1.GetMerchantRequest
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	return &v1.GetMerchantResponse{
+	return &v1.Merchant{
 		Id:              m.ID,
 		Descriptor_:     m.Descriptor,
 		ShortDescriptor: m.ShortDescriptor,
@@ -84,6 +84,31 @@ func (s service) GetMerchant(ctx context.Context, request *v1.GetMerchantRequest
 		CreatedAt:       m.CreatedAt.String(),
 		UpdatedAt:       m.UpdatedAt.String(),
 	}, nil
+}
+
+func (s service) GetAllMerchants(ctx context.Context, req *emptypb.Empty) (*v1.GetAllMerchantsResponse, error) {
+	if m, err := merchant.SelectAll(ctx, s.db); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	} else {
+		merchants := make([]*v1.Merchant, len(m))
+		for i, m := range m {
+			merchants[i] = &v1.Merchant{
+				Id:              m.ID,
+				Descriptor_:     m.Descriptor,
+				ShortDescriptor: m.ShortDescriptor,
+				Mcc:             m.MCC,
+				Line_1:          m.Line1,
+				Line_2:          m.Line2,
+				Town:            m.Town,
+				Postcode:        m.Postcode,
+				CountryCode:     m.CountryCode,
+				CreatedAt:       m.CreatedAt.String(),
+				UpdatedAt:       m.UpdatedAt.String(),
+			}
+		}
+
+		return &v1.GetAllMerchantsResponse{Merchants: merchants}, nil
+	}
 }
 
 func main() {

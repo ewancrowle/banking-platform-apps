@@ -39,3 +39,9 @@ func Select(ctx context.Context, db *bun.DB, id int64) (*Merchant, error) {
 	err := db.NewSelect().Model(m).Where("id = ?", id).Scan(ctx)
 	return m, err
 }
+
+func SelectAll(ctx context.Context, db *bun.DB) ([]*Merchant, error) {
+	var m []*Merchant
+	err := db.NewSelect().Model(&m).Scan(ctx)
+	return m, err
+}

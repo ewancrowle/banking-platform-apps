@@ -32,7 +32,7 @@ const formOpts = formOptions({
 	},
 });
 
-export default function LoginScreen() {
+export default function Login() {
 	const form = useForm({
 		...formOpts,
 		onSubmit: async ({ value }) => {

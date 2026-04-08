@@ -109,9 +109,21 @@ export default function RootLayout() {
 						options={{ title: "", headerShown: false }}
 					/>
 					<Stack.Screen
+						name="new-deposit"
+						options={{
+							title: "New Deposit",
+						}}
+					/>
+					<Stack.Screen
 						name="new-transfer"
 						options={{
 							title: "New Transfer",
+						}}
+					/>
+					<Stack.Screen
+						name="new-card-payment"
+						options={{
+							title: "New Card Payment",
 						}}
 					/>
 				</Stack>

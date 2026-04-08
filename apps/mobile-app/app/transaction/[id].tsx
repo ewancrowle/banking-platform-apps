@@ -6,7 +6,7 @@ import { ScrollView, StyleSheet, View } from "react-native";
 import { Section } from "@/components/section";
 import { ThemedText } from "@/components/themed-text";
 
-export default function TransactionDetailsScreen() {
+export default function TransactionInfo() {
 	const params = useLocalSearchParams();
 	const theme = useTheme();
 

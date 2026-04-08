@@ -1,11 +1,12 @@
 import { useTheme } from "@react-navigation/native";
 import { router } from "expo-router";
+import type { Payment } from "protos/payment";
 import type React from "react";
 import { FlatList, Pressable, StyleSheet, View } from "react-native";
-import { type Transaction, TransactionItem } from "./transaction-item";
+import { TransactionItem } from "./transaction-item";
 
 interface TransactionListProps {
-	transactions: Transaction[];
+	transactions: Payment[];
 	ListHeaderComponent?: React.ReactElement;
 }
 
@@ -18,7 +19,7 @@ export function TransactionList({
 	return (
 		<FlatList
 			data={transactions}
-			keyExtractor={(item) => item.id}
+			keyExtractor={(item) => item.id.toString()}
 			contentContainerStyle={styles.listContent}
 			showsVerticalScrollIndicator={false}
 			ListHeaderComponent={ListHeaderComponent}

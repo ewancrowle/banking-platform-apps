@@ -4,7 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Background from "@/components/background";
 import { ThemedButton } from "@/components/themed-button";
 
-export default function AuthScreen() {
+export default function Auth() {
 	const router = useRouter();
 
 	return (
