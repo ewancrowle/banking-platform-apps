@@ -156,7 +156,11 @@ export default function HomeScreen() {
 							</ThemedText>
 						</View>
 						<View style={styles.buttonContainer}>
-							<ThemedButton icon="add" style={styles.flexButton}>
+							<ThemedButton
+								icon="add"
+								style={styles.flexButton}
+								onPress={() => router.push("/new-deposit")}
+							>
 								Add money
 							</ThemedButton>
 							<ThemedButton
