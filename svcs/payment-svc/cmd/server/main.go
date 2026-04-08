@@ -205,8 +205,31 @@ func (s service) AuthorisePayment(ctx context.Context, request *v1.AuthorisePaym
 }
 
 func (s service) IncrementPayment(ctx context.Context, request *v1.IncrementPaymentRequest) (*emptypb.Empty, error) {
-	//TODO implement me
-	panic("implement me")
+	p, err := payment.Select(ctx, s.db, request.PaymentId)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	p.Amount += request.ReplacementAmount
+	if err := p.SetAmount(ctx, s.db, p.Amount); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	p.Status = payment.StatusIncremented
+
+	b, err := json.Marshal(p)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	if err := s.kafkaCl.ProduceSync(ctx, &kgo.Record{
+		Value: b,
+		Topic: "payments",
+	}).FirstErr(); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	return &emptypb.Empty{}, nil
 }
 
 func (s service) CapturePayment(ctx context.Context, request *v1.CapturePaymentRequest) (*emptypb.Empty, error) {
@@ -224,7 +247,7 @@ func (s service) CapturePayment(ctx context.Context, request *v1.CapturePaymentR
 
 	p.Status = payment.StatusCaptured
 
-	if err := p.SetStatus(ctx, s.db, payment.StatusCaptured); err != nil {
+	if err := p.SetStatus(ctx, s.db, p.Status); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
@@ -244,13 +267,57 @@ func (s service) CapturePayment(ctx context.Context, request *v1.CapturePaymentR
 }
 
 func (s service) ExpirePayment(ctx context.Context, request *v1.ExpirePaymentRequest) (*emptypb.Empty, error) {
-	//TODO implement me
-	panic("implement me")
+	p, err := payment.Select(ctx, s.db, request.PaymentId)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	p.Status = payment.StatusExpired
+
+	if err := p.SetStatus(ctx, s.db, p.Status); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	b, err := json.Marshal(p)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	if err := s.kafkaCl.ProduceSync(ctx, &kgo.Record{
+		Value: b,
+		Topic: "payments",
+	}).FirstErr(); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	return &emptypb.Empty{}, nil
 }
 
 func (s service) VoidPayment(ctx context.Context, request *v1.VoidPaymentRequest) (*emptypb.Empty, error) {
-	//TODO implement me
-	panic("implement me")
+	p, err := payment.Select(ctx, s.db, request.PaymentId)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	p.Status = payment.StatusVoided
+
+	if err := p.SetStatus(ctx, s.db, p.Status); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	b, err := json.Marshal(p)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	if err := s.kafkaCl.ProduceSync(ctx, &kgo.Record{
+		Value: b,
+		Topic: "payments",
+	}).FirstErr(); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	return &emptypb.Empty{}, nil
 }
 
 func (s service) GetPayments(ctx context.Context, req *v1.GetPaymentsRequest) (*v1.GetPaymentsResponse, error) {
