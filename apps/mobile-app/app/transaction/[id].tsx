@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@react-navigation/native";
 import dayjs from "dayjs";
 import { Stack, useLocalSearchParams } from "expo-router";
+import { DeclineReason } from "protos/payment";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { Section } from "@/components/section";
 import { ThemedText } from "@/components/themed-text";
@@ -32,6 +33,7 @@ export default function TransactionInfo() {
 		status,
 		description,
 		merchant,
+		declineReason,
 	} = transaction;
 
 	const formattedAmount = new Intl.NumberFormat("en-GB", {
@@ -172,9 +174,15 @@ export default function TransactionInfo() {
 			<Section title="Transaction information">
 				<View style={styles.row}>
 					<ThemedText style={styles.label}>Status</ThemedText>
-					<ThemedText style={[styles.value, { color: statusColor }]}>
-						{statusLabel}
-					</ThemedText>
+					{declineReason === DeclineReason.INSUFFICIENT_FUNDS ? (
+						<ThemedText style={[styles.value, { color: statusColor }]}>
+							{statusLabel}
+						</ThemedText>
+					) : (
+						<ThemedText style={[styles.value, { color: statusColor }]}>
+							{statusLabel} Due to Insufficient Funds
+						</ThemedText>
+					)}
 				</View>
 				<View style={styles.row}>
 					<ThemedText style={styles.label}>Type</ThemedText>

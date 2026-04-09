@@ -358,6 +358,11 @@ func (s service) GetPayments(ctx context.Context, req *v1.GetPaymentsRequest) (*
 			}
 		}
 
+		var declineReason v1.DeclineReason
+		if p.DeclineReason != nil {
+			declineReason = v1.DeclineReason(*p.DeclineReason)
+		}
+
 		paymentResponses = append(paymentResponses, &v1.Payment{
 			Id:               p.ID,
 			AccountId:        p.AccountID,
@@ -371,6 +376,7 @@ func (s service) GetPayments(ctx context.Context, req *v1.GetPaymentsRequest) (*
 			CreatedAt:        p.CreatedAt.String(),
 			OtherAccountName: otherAccountName,
 			Merchant:         merchant,
+			DeclineReason:    &declineReason,
 		})
 	}
 
