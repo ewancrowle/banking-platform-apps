@@ -147,7 +147,7 @@ export default function Home() {
 									size={16}
 									color={theme.colors.text}
 								/>
-								<ThemedText>{account?.id.toString().slice(0, 8)}</ThemedText>
+								<ThemedText>{account?.accountNum}</ThemedText>
 							</View>
 						</View>
 						<View style={styles.balanceContainer}>

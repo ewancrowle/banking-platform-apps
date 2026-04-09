@@ -11,7 +11,6 @@ import (
 	"fmt"
 	"identity-svc/gen/identity/v1/identityv1connect"
 	"log"
-	"log/slog"
 	"net/http"
 	"strings"
 
@@ -92,21 +91,17 @@ func (s service) VerifyCredentials(ctx context.Context, request *v1.VerifyCreden
 	a, err := account.SelectByEmail(ctx, s.db, strings.ToLower(request.Email))
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			slog.Info("account not found", "email", request.Email)
 			return &v1.VerifyCredentialsResponse{}, nil
 		}
-		slog.Error("error selecting account", "email", request.Email, "error", err)
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
 	match, err := argon2id.ComparePasswordAndHash(request.Password, a.PasswordHash)
 	if err != nil {
-		slog.Error("error comparing password", "email", request.Email, "error", err)
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
 	if !match {
-		slog.Info("password does not match", "email", request.Email)
 		return &v1.VerifyCredentialsResponse{}, nil
 	}
 

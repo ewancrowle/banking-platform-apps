@@ -44,9 +44,14 @@ const formSchema = z
 		town: z.string().min(1, {
 			message: "Please enter your town.",
 		}),
-		postcode: z.string().min(1, {
-			message: "Please enter your postcode.",
-		}),
+		postcode: z
+			.string()
+			.min(5, {
+				message: "Please enter your postcode.",
+			})
+			.max(8, {
+				message: "Please enter a valid postcode.",
+			}),
 	})
 	.refine((arg) => arg.password === arg.confirmPassword, {
 		message: "Passwords do not match.",

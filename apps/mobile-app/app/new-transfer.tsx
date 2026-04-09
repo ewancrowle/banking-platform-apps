@@ -2,7 +2,7 @@ import { useTheme } from "@react-navigation/native";
 import { formOptions, useForm, useStore } from "@tanstack/react-form";
 import { router } from "expo-router";
 import { Decision } from "protos/payment";
-import { Alert, Keyboard, Pressable, ScrollView } from "react-native";
+import { Alert, Keyboard, Pressable } from "react-native";
 import CurrencyInput from "react-native-currency-input";
 import * as z from "zod";
 import trpc from "@/api/trpc";
@@ -55,7 +55,7 @@ const formSchema = z.object({
 		.max(8, {
 			message: "Please enter a valid account number.",
 		}),
-	amount: z.number().min(1, {
+	amount: z.number().min(0.01, {
 		message: "Please enter a valid amount.",
 	}),
 	reference: z.string().min(1, {

@@ -25,6 +25,7 @@ import (
 	"github.com/uptrace/bun/dialect/pgdialect"
 	"github.com/uptrace/bun/driver/pgdriver"
 	"github.com/uptrace/bun/extra/bundebug"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type config struct {
@@ -58,6 +59,11 @@ func (s *service) ConfirmPayee(ctx context.Context, req *v1.ConfirmPayeeRequest)
 		return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("account not found"))
 	}
 
+	id, err := s.identityServiceClient.ID(ctx, &emptypb.Empty{})
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
 	b := make([]byte, 32)
 	_, err = rand.Read(b)
 	if err != nil {
@@ -70,6 +76,7 @@ func (s *service) ConfirmPayee(ctx context.Context, req *v1.ConfirmPayeeRequest)
 	hashString := hex.EncodeToString(hash[:])
 
 	t := confirmationofpayee.ConfirmationOfPayeeToken{
+		ID:        id.Id,
 		AccountID: a.ID,
 		Hash:      hashString,
 	}
