@@ -17,6 +17,7 @@ import (
 	"net/http"
 	paymentdecisionv1 "payment-decision-svc/gen/payment_decision/v1"
 	"payment-decision-svc/gen/payment_decision/v1/payment_decisionv1connect"
+	"payment-decision-svc/pkg/model/paymentdecision"
 	v1 "payment-svc/gen/payment/v1"
 	"payment-svc/gen/payment/v1/paymentv1connect"
 	"payment-svc/pkg/model/payment"
@@ -177,6 +178,12 @@ func (s service) AuthorisePayment(ctx context.Context, request *v1.AuthorisePaym
 		return nil, connect.NewError(connect.CodeInternal, errors.New("unspecified decision"))
 	case paymentdecisionv1.Decision_DECISION_DECLINED:
 		p.Status = payment.StatusDeclined
+		dr := paymentdecision.DeclineReason(d.DeclineReason.Number())
+		p.DeclineReason = &dr
+
+		if err = p.SetDeclineReason(ctx, s.db, dr); err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
 	default:
 		p.Status = payment.StatusAuthorised
 	}

@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"merchant-svc/pkg/model/merchant"
+	"payment-decision-svc/pkg/model/paymentdecision"
 	"time"
 
 	"github.com/uptrace/bun"
@@ -77,9 +78,10 @@ type Payment struct {
 	Amount       int64  `bun:",notnull" json:"amount"`
 	CurrencyCode string `bun:",notnull" json:"currency_code"`
 
-	Type        Type   `bun:",notnull" json:"type"`
-	Status      Status `bun:",notnull" json:"status"`
-	Description string `bun:",notnull" json:"description"`
+	Type          Type                           `bun:",notnull" json:"type"`
+	Status        Status                         `bun:",notnull" json:"status"`
+	Description   string                         `bun:",notnull" json:"description"`
+	DeclineReason *paymentdecision.DeclineReason `bun:",nullzero" json:"decline_reason"`
 
 	CreatedAt time.Time `bun:",nullzero,notnull,default:current_timestamp" json:"created_at"`
 }
@@ -115,6 +117,11 @@ func SelectDisplayableByAccountID(ctx context.Context, db *bun.DB, accountID int
 
 func (p *Payment) SetStatus(ctx context.Context, db *bun.DB, status Status) error {
 	_, err := db.NewUpdate().Model(p).Set("status = ?", status).WherePK().Exec(ctx)
+	return err
+}
+
+func (p *Payment) SetDeclineReason(ctx context.Context, db *bun.DB, reason paymentdecision.DeclineReason) error {
+	_, err := db.NewUpdate().Model(p).Set("decline_reason = ?", reason).WherePK().Exec(ctx)
 	return err
 }
 

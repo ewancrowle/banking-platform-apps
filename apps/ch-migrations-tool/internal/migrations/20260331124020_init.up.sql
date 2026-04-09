@@ -9,6 +9,7 @@ CREATE TABLE payments
     type LowCardinality(String),
     status LowCardinality(String),
     description String,
+    decline_reason Int8,
     created_at DateTime64(3, 'UTC')
 ) ENGINE = MergeTree ORDER BY (account_id, created_at, id);
 
@@ -25,6 +26,7 @@ CREATE TABLE payments_queue
     type LowCardinality(String),
     status LowCardinality(String),
     description String,
+    decline_reason Nullable(Int8),
     created_at String
 ) ENGINE = Kafka('redpanda.redpanda.svc.cluster.local:9093', 'payments', 'clickhouse', 'JSONEachRow');
 
@@ -41,6 +43,7 @@ SELECT
     type,
     status,
     description,
+    ifNull(decline_reason, 0) AS decline_reason,
     parseDateTime64BestEffort(created_at, 3, 'UTC') AS created_at
 FROM payments_queue;
 
