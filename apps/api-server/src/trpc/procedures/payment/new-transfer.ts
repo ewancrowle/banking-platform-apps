@@ -27,6 +27,7 @@ const newTransfer = protectedProcedure
 				amount: BigInt(opts.input.amount),
 				currencyCode: "GBP",
 				description: opts.input.reference,
+				type: "account_to_account",
 			});
 		} catch (err) {
 			throw serverError(err);

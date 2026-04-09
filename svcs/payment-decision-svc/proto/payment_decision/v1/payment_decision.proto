@@ -27,9 +27,16 @@ enum Decision {
   DECISION_APPROVED = 2;
 }
 
+enum DeclineReason {
+  DECLINE_REASON_UNSPECIFIED = 0;
+  DECLINE_REASON_INSUFFICIENT_FUNDS = 1;
+  DECLINE_REASON_SUSPICIOUS_ACTIVITY = 2;
+}
+
 message DecidePaymentResponse {
   Decision decision = 1;
   int64 decision_id = 2;
+  optional DeclineReason decline_reason = 3;
 }
 
 service PaymentDecisionService {

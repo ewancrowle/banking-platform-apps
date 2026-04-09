@@ -53,10 +53,11 @@ func (s service) DecidePayment(ctx context.Context, request *v1.DecidePaymentReq
 	}
 
 	if request.Type == "withdrawal" || request.Type == "card" || request.Type == "account_to_account" {
-		if balances.AvailableBalance < request.Amount {
+		if balances.AvailableBalance+request.Amount < 0 {
 			return &v1.DecidePaymentResponse{
-				Decision:   v1.Decision_DECISION_DECLINED,
-				DecisionId: id.Id,
+				Decision:      v1.Decision_DECISION_DECLINED,
+				DecisionId:    id.Id,
+				DeclineReason: v1.DeclineReason_DECLINE_REASON_INSUFFICIENT_FUNDS.Enum(),
 			}, nil
 		}
 	}
