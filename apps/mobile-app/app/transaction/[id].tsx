@@ -5,13 +5,34 @@ import { Stack, useLocalSearchParams } from "expo-router";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { Section } from "@/components/section";
 import { ThemedText } from "@/components/themed-text";
+import { usePaymentsStore } from "@/store/payments";
+import { getPaymentIcon } from "@/utils/get-payment-icon";
 
 export default function TransactionInfo() {
-	const params = useLocalSearchParams();
 	const theme = useTheme();
 
-	const { id, amount, currencyCode, description, type, status, createdAt } =
-		params;
+	const { id } = useLocalSearchParams();
+	const { payments } = usePaymentsStore();
+	const transaction = payments.find((p) => p.id.toString() === id);
+
+	if (!transaction) {
+		return (
+			<View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+				<Stack.Screen options={{ title: "Transaction Details" }} />
+				<ThemedText>Transaction not found</ThemedText>
+			</View>
+		);
+	}
+
+	const {
+		amount,
+		currencyCode,
+		createdAt,
+		type,
+		status,
+		description,
+		merchant,
+	} = transaction;
 
 	const formattedAmount = new Intl.NumberFormat("en-GB", {
 		style: "currency",
@@ -40,20 +61,7 @@ export default function TransactionInfo() {
 			? (status as string).charAt(0).toUpperCase() + (status as string).slice(1)
 			: "");
 
-	const getIconForType = (t: string): keyof typeof Ionicons.glyphMap => {
-		switch (t) {
-			case "deposit":
-				return "arrow-down";
-			case "withdrawal":
-				return "arrow-up";
-			case "card":
-				return "card-outline";
-			case "account_to_account":
-				return "swap-horizontal-outline";
-			default:
-				return "cash-outline";
-		}
-	};
+	const icon = getPaymentIcon(transaction);
 
 	let statusColor = theme.colors.text;
 	switch (status) {
@@ -110,10 +118,16 @@ export default function TransactionInfo() {
 		},
 		value: {
 			fontSize: 16,
-			maxWidth: "60%",
 			textAlign: "right",
 		},
 	});
+
+	const getMerchantAddress = () => {
+		if (!merchant) return undefined;
+		return [merchant.line1, merchant.line2, merchant.town, merchant.postcode]
+			.filter(Boolean)
+			.join(", ");
+	};
 
 	return (
 		<ScrollView
@@ -127,11 +141,7 @@ export default function TransactionInfo() {
 				<View
 					style={[styles.iconContainer, { backgroundColor: theme.colors.card }]}
 				>
-					<Ionicons
-						name={getIconForType(type as string)}
-						size={32}
-						color={theme.colors.text}
-					/>
+					<Ionicons name={icon} size={32} color={theme.colors.text} />
 				</View>
 				<ThemedText style={styles.amount}>
 					{type === "deposit" && "+"}
@@ -139,6 +149,25 @@ export default function TransactionInfo() {
 				</ThemedText>
 				<ThemedText style={styles.description}>{description}</ThemedText>
 			</View>
+
+			{merchant && (
+				<Section title="Merchant">
+					<View style={styles.row}>
+						<ThemedText style={styles.label}>Merchant</ThemedText>
+						<ThemedText style={styles.value}>{merchant.descriptor}</ThemedText>
+					</View>
+					<View style={styles.row}>
+						<ThemedText style={styles.label}>Trading Name</ThemedText>
+						<ThemedText style={styles.value}>
+							{merchant.shortDescriptor}
+						</ThemedText>
+					</View>
+					<View style={styles.row}>
+						<ThemedText style={styles.label}>Address</ThemedText>
+						<ThemedText style={styles.value}>{getMerchantAddress()}</ThemedText>
+					</View>
+				</Section>
+			)}
 
 			<Section title="Transaction information">
 				<View style={styles.row}>

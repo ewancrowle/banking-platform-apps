@@ -6,7 +6,7 @@ import { useAuthStore } from "@/store/auth";
 export default createTRPCClient<AppRouter>({
 	links: [
 		httpBatchLink({
-			url: "http://localhost:3000",
+			url: "http://api-server.platform.svc.cluster.local:3000",
 			transformer: superjson,
 			async headers() {
 				const accessToken = useAuthStore.getState().accessToken;

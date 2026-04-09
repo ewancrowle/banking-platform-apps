@@ -5,35 +5,9 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import type { Payment } from "protos/payment";
 import { StyleSheet, View } from "react-native";
 import { ThemedText } from "@/components/themed-text";
+import { getPaymentIcon } from "@/utils/get-payment-icon";
 
 type TransactionItemProps = Payment;
-
-const getIconForPayment = (
-	payment: Payment,
-): keyof typeof Ionicons.glyphMap => {
-	switch (payment.type) {
-		case "deposit":
-			return "arrow-down";
-		case "withdrawal":
-			return "arrow-up";
-		case "card":
-			if (payment.merchant) {
-				switch (payment.merchant.mcc) {
-					case "5411":
-						return "cart-outline";
-					case "5814":
-						return "fast-food-outline";
-					default:
-						return "card-outline";
-				}
-			}
-			return "card-outline";
-		case "account_to_account":
-			return "swap-horizontal-outline";
-		default:
-			return "cash-outline";
-	}
-};
 
 const formatAmount = (amount: number, currencyCode: string) => {
 	return new Intl.NumberFormat("en-GB", {
@@ -46,7 +20,7 @@ dayjs.extend(relativeTime);
 
 export function TransactionItem(payment: TransactionItemProps) {
 	const theme = useTheme();
-	const icon = getIconForPayment(payment);
+	const icon = getPaymentIcon(payment);
 	const {
 		amount,
 		currencyCode,

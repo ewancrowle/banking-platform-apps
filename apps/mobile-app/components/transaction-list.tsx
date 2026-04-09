@@ -34,7 +34,9 @@ export function TransactionList({
 					onPress={() =>
 						router.push({
 							pathname: "/transaction/[id]",
-							params: { ...item },
+							params: {
+								id: item.id.toString(),
+							},
 						})
 					}
 				>

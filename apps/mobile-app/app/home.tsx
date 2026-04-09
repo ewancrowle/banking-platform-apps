@@ -13,13 +13,14 @@ import { ThemedButton } from "@/components/themed-button";
 import { ThemedText } from "@/components/themed-text";
 import { TransactionList } from "@/components/transaction-list";
 import { useAuthStore } from "@/store/auth";
+import { usePaymentsStore } from "@/store/payments";
 
 export default function Home() {
 	const theme = useTheme();
 	const { showActionSheetWithOptions } = useActionSheet();
 	const { account, setAccount, reset } = useAuthStore();
+	const { payments: transactions, setPayments } = usePaymentsStore();
 	const [balance, setBalance] = useState<string | null>(null);
-	const [transactions, setTransactions] = useState<Payment[]>([]);
 
 	const onPressHelp = () => {
 		showActionSheetWithOptions(
@@ -89,10 +90,7 @@ export default function Home() {
 						"card",
 						"account_to_account",
 					];
-					setTransactions(
-						res.payments.filter((p) => validTypes.includes(p.type)),
-					);
-					console.log(res.payments);
+					setPayments(res.payments.filter((p) => validTypes.includes(p.type)));
 				})
 				.catch((err) => {
 					console.error("Failed to load transactions", err);
