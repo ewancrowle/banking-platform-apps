@@ -49,7 +49,7 @@ func (s service) GetBalances(ctx context.Context, request *v1.GetBalancesRequest
 		TableExpr("current_payments FINAL").
 		Where("account_id = ?", request.AccountId).
 		Where("currency_code = ?", a.CurrencyCode).
-		Where("status NOT IN (?)", []payment.Status{payment.StatusReceived, payment.StatusDeclined, payment.StatusExpired, payment.StatusVoided}).
+		Where("status NOT IN (?)", ch.In([]payment.Status{payment.StatusReceived, payment.StatusDeclined, payment.StatusExpired, payment.StatusVoided})).
 		Scan(ctx, &availableBalance); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
