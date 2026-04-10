@@ -9,6 +9,9 @@ import trpc from "@/api/trpc";
 import { Section } from "@/components/section";
 import { ThemedButton } from "@/components/themed-button";
 import { ThemedText } from "@/components/themed-text";
+import { useBalanceStore } from "@/store/balance";
+import { usePaymentsStore } from "@/store/payments";
+import { useSpendingStore } from "@/store/spending";
 
 const formSchema = z.object({
 	amount: z.number().min(0.01, {
@@ -28,6 +31,10 @@ const formOpts = formOptions({
 export default function NewDeposit() {
 	const theme = useTheme();
 
+	const { refresh: refreshPayments } = usePaymentsStore();
+	const { refresh: refreshBalance } = useBalanceStore();
+	const { refresh: refreshSpending } = useSpendingStore();
+
 	const form = useForm({
 		...formOpts,
 		onSubmit: async ({ value }) => {
@@ -35,11 +42,17 @@ export default function NewDeposit() {
 				const payment = await trpc.payment.newDeposit.mutate({
 					amount: value.amount * 100,
 				});
+
 				if (payment.decision === Decision.DECLINED) {
 					Alert.alert("Deposit declined. Please try again later.");
 					return;
 				}
 				Alert.alert("Deposit successful.");
+
+				await refreshPayments();
+				await refreshBalance();
+				refreshSpending();
+
 				form.reset();
 				router.back();
 			} catch (err) {

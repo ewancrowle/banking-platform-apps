@@ -10,6 +10,9 @@ import { Section } from "@/components/section";
 import { ThemedButton } from "@/components/themed-button";
 import { ThemedInput } from "@/components/themed-input";
 import { ThemedText } from "@/components/themed-text";
+import { useBalanceStore } from "@/store/balance";
+import { usePaymentsStore } from "@/store/payments";
+import { useSpendingStore } from "@/store/spending";
 import { getTRPCErrorCode } from "@/utils/get-trpc-error-code";
 
 function isValidLuhn(val: string) {
@@ -79,6 +82,10 @@ const formOpts = formOptions({
 export default function NewTransfer() {
 	const theme = useTheme();
 
+	const { refresh: refreshPayments } = usePaymentsStore();
+	const { refresh: refreshBalance } = useBalanceStore();
+	const { refresh: refreshSpending } = useSpendingStore();
+
 	const form = useForm({
 		...formOpts,
 		onSubmit: async ({ value }) => {
@@ -114,6 +121,7 @@ export default function NewTransfer() {
 					amount: value.amount * 100,
 					reference: value.reference,
 				});
+
 				if (payment.decision === Decision.DECLINED) {
 					Alert.alert(
 						"Payment declined. Please check your balance or try again later.",
@@ -121,6 +129,11 @@ export default function NewTransfer() {
 					return;
 				}
 				Alert.alert("Payment successful.");
+
+				await refreshPayments();
+				await refreshBalance();
+				await refreshSpending();
+
 				form.reset();
 				router.back();
 			} catch (err) {

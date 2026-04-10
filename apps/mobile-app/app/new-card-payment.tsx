@@ -12,6 +12,9 @@ import trpc from "@/api/trpc";
 import { Section } from "@/components/section";
 import { ThemedButton } from "@/components/themed-button";
 import { ThemedText } from "@/components/themed-text";
+import { useBalanceStore } from "@/store/balance";
+import { usePaymentsStore } from "@/store/payments";
+import { useSpendingStore } from "@/store/spending";
 
 const formSchema = z.object({
 	merchantId: z.bigint().min(BigInt(1), {
@@ -34,8 +37,14 @@ const formOpts = formOptions({
 
 export default function NewCardPayment() {
 	const theme = useTheme();
+
 	const { showActionSheetWithOptions } = useActionSheet();
+
 	const [merchants, setMerchants] = useState<Merchant[]>([]);
+
+	const { refresh: refreshPayments } = usePaymentsStore();
+	const { refresh: refreshBalance } = useBalanceStore();
+	const { refresh: refreshSpending } = useSpendingStore();
 
 	useEffect(() => {
 		const fetchMerchants = async () => {
@@ -53,13 +62,19 @@ export default function NewCardPayment() {
 					merchantId: value.merchantId,
 					amount: value.amount * 100,
 				});
+
 				if (payment.decision === Decision.DECLINED) {
 					Alert.alert("Payment declined. Please try again later.");
 					return;
 				}
 				Alert.alert("Payment successful.");
+
+				await refreshPayments();
+				await refreshBalance();
+				await refreshSpending();
+
 				form.reset();
-				router.replace("/home");
+				router.back();
 			} catch (err) {
 				console.log(err);
 				Alert.alert("An error occurred. Please try again later.");

@@ -3,9 +3,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@react-navigation/native";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
-import type { GetTotalSpendingResponse } from "protos/ledger";
 import { useEffect, useState } from "react";
-import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { getAccount } from "@/api/auth";
 import trpc from "@/api/trpc";
@@ -14,26 +13,25 @@ import { ThemedButton } from "@/components/themed-button";
 import { ThemedText } from "@/components/themed-text";
 import { TransactionList } from "@/components/transaction-list";
 import { useAuthStore } from "@/store/auth";
+import { useBalanceStore } from "@/store/balance";
 import { usePaymentsStore } from "@/store/payments";
-
-const formatCurrency = (amount: bigint, currencyCode: string): string => {
-	return new Intl.NumberFormat("en-GB", {
-		style: "currency",
-		currency: currencyCode || "GBP",
-	}).format(Number(amount) / 100);
-};
+import { useSpendingStore } from "@/store/spending";
+import formatCurrency from "@/utils/format-currency";
 
 export default function Home() {
 	const theme = useTheme();
+
 	const { showActionSheetWithOptions } = useActionSheet();
+
 	const { account, setAccount, reset } = useAuthStore();
-	const { payments: transactions, setPayments } = usePaymentsStore();
-	const [balance, setBalance] = useState<string | null>(null);
-	const [totalSpent, setTotalSpent] = useState<{
-		today: string;
-		thisWeek: string;
-		thisMonth: string;
-	} | null>(null);
+	const { payments, refresh: refreshPayments } = usePaymentsStore();
+	const { formattedBalance, refresh: refreshBalance } = useBalanceStore();
+	const {
+		formattedSpentToday,
+		formattedSpentThisWeek,
+		formattedSpentThisMonth,
+		refresh: refreshSpending,
+	} = useSpendingStore();
 
 	const onPressHelp = () => {
 		showActionSheetWithOptions(
@@ -67,58 +65,19 @@ export default function Home() {
 	};
 
 	useEffect(() => {
-		if (!account) {
-			getAccount().then((acc) => {
-				if (acc) setAccount(acc);
-			});
-		}
+		if (account) return;
+		getAccount().then((res) => {
+			if (res) setAccount(res);
+		});
 	}, [account, setAccount]);
 
 	useEffect(() => {
 		if (account) {
-			trpc.balance.getBalances
-				.query()
-				.then((res) =>
-					setBalance(formatCurrency(res.availableBalance, res.currencyCode)),
-				)
-				.catch((err) => {
-					console.error(err);
-					Alert.alert(
-						"Your balance could not be loaded at this time. Please try again later.",
-					);
-				});
-
-			trpc.payment.getPayments
-				.query()
-				.then((res) => {
-					const validTypes = [
-						"deposit",
-						"withdrawal",
-						"card",
-						"account_to_account",
-					];
-					setPayments(res.payments.filter((p) => validTypes.includes(p.type)));
-				})
-				.catch((err) => {
-					console.error("Failed to load transactions", err);
-				});
+			refreshBalance();
+			refreshPayments();
+			refreshSpending();
 		}
-	}, [account, setPayments]);
-
-	useEffect(() => {
-		trpc.spending.getTotalSpending
-			.query()
-			.then((res) => {
-				setTotalSpent({
-					today: formatCurrency(res.totalSpentToday, res.currencyCode),
-					thisWeek: formatCurrency(res.totalSpentThisWeek, res.currencyCode),
-					thisMonth: formatCurrency(res.totalSpentThisMonth, res.currencyCode),
-				});
-			})
-			.catch((err) => {
-				console.error("Failed to load total spending", err);
-			});
-	}, []);
+	}, [account, refreshBalance, refreshPayments, refreshSpending]);
 
 	const initials = account
 		? `${account.firstName[0]}${account.lastName[0]}`.toUpperCase()
@@ -205,7 +164,7 @@ export default function Home() {
 	return (
 		<SafeAreaView style={styles.container}>
 			<TransactionList
-				transactions={transactions}
+				transactions={payments}
 				ListHeaderComponent={
 					<View style={styles.headerContainer}>
 						<View style={styles.topBar}>
@@ -265,7 +224,7 @@ export default function Home() {
 									fontWeight: "700",
 								}}
 							>
-								{balance || "£0.00"}
+								{formattedBalance || formatCurrency(0)}
 							</ThemedText>
 						</View>
 						<View style={styles.buttonContainer}>
@@ -285,28 +244,26 @@ export default function Home() {
 							</ThemedButton>
 						</View>
 
-						{totalSpent && (
-							<Section title="Your spending">
-								<View style={styles.row}>
-									<ThemedText style={styles.label}>Spent Today</ThemedText>
-									<ThemedText style={styles.value}>
-										{totalSpent.today}
-									</ThemedText>
-								</View>
-								<View style={styles.row}>
-									<ThemedText style={styles.label}>Spent This Week</ThemedText>
-									<ThemedText style={styles.value}>
-										{totalSpent.thisWeek}
-									</ThemedText>
-								</View>
-								<View style={[styles.row, styles.noBorder]}>
-									<ThemedText style={styles.label}>Spent This Month</ThemedText>
-									<ThemedText style={styles.value}>
-										{totalSpent.thisMonth}
-									</ThemedText>
-								</View>
-							</Section>
-						)}
+						<Section title="Your spending">
+							<View style={styles.row}>
+								<ThemedText style={styles.label}>Spent Today</ThemedText>
+								<ThemedText style={styles.value}>
+									{formattedSpentToday || formatCurrency(0)}
+								</ThemedText>
+							</View>
+							<View style={styles.row}>
+								<ThemedText style={styles.label}>Spent This Week</ThemedText>
+								<ThemedText style={styles.value}>
+									{formattedSpentThisWeek || formatCurrency(0)}
+								</ThemedText>
+							</View>
+							<View style={[styles.row, styles.noBorder]}>
+								<ThemedText style={styles.label}>This Month</ThemedText>
+								<ThemedText style={styles.value}>
+									{formattedSpentThisMonth || formatCurrency(0)}
+								</ThemedText>
+							</View>
+						</Section>
 
 						<ThemedText
 							style={{
