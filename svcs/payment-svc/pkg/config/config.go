@@ -7,6 +7,7 @@ type Config struct {
 	AccountServiceAddr         string `envconfig:"account_service_addr" required:"true"`
 	MerchantServiceAddr        string `envconfig:"merchant_service_addr" required:"true"`
 	PaymentDecisionServiceAddr string `envconfig:"payment_decision_service_addr" required:"true"`
+	COPServiceAddr             string `envconfig:"cop_service_addr" required:"true"`
 
 	DBHost     string `envconfig:"db_host" required:"true"`
 	DBName     string `envconfig:"db_name" required:"true"`

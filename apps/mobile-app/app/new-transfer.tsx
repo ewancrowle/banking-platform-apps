@@ -103,7 +103,7 @@ export default function NewTransfer() {
 					accountNumber: value.accountNumber,
 				});
 				confirmPayeeToken = confirmPayee.confirmationOfPayeeToken;
-				Alert.alert("It&apos;s a match!");
+				Alert.alert("It's a match!");
 			} catch (err) {
 				const code = getTRPCErrorCode(err);
 				if (code === "NOT_FOUND") {

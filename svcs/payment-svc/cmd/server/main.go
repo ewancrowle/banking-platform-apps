@@ -456,13 +456,19 @@ func main() {
 		c.PaymentDecisionServiceAddr,
 	)
 
+	confirmationOfPayeeServiceClient := confirmation_of_payeev1connect.NewConfirmationOfPayeeServiceClient(
+		http.DefaultClient,
+		c.COPServiceAddr,
+	)
+
 	svc := service{
-		db:                    db,
-		kafkaCl:               kafkaCl,
-		identityServiceClient: identityServiceClient,
-		accountServiceClient:  accountServiceClient,
-		merchantServiceClient: merchantServiceClient,
-		paymentDecisionClient: paymentDecisionServiceClient,
+		db:                               db,
+		kafkaCl:                          kafkaCl,
+		identityServiceClient:            identityServiceClient,
+		accountServiceClient:             accountServiceClient,
+		merchantServiceClient:            merchantServiceClient,
+		paymentDecisionClient:            paymentDecisionServiceClient,
+		confirmationOfPayeeServiceClient: confirmationOfPayeeServiceClient,
 	}
 
 	path, handler := paymentv1connect.NewPaymentServiceHandler(svc, connect.WithInterceptors(validate.NewInterceptor()))
