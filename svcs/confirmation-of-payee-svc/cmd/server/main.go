@@ -39,7 +39,7 @@ func (s *service) ConfirmPayee(ctx context.Context, req *v1.ConfirmPayeeRequest)
 	a := new(account.Account)
 	exists, err := s.db.NewSelect().
 		Model(a).
-		Where("account_num = ?", req.AccountNum).
+		Where("account_no = ?", req.AccountNum).
 		Where("first_name ILIKE ?", req.FirstName).
 		Where("last_name ILIKE ?", req.LastName).
 		Exists(ctx)

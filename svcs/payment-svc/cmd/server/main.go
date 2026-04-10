@@ -93,8 +93,7 @@ func (s service) AuthorisePayment(ctx context.Context, request *v1.AuthorisePaym
 			ConfirmationOfPayeeToken: request.GetConfirmationOfPayeeToken(),
 		})
 		if err != nil {
-			connectErr := new(connect.Error)
-			if errors.As(err, &connectErr) && connectErr.Code() == connect.CodeInternal {
+			if connect.CodeOf(err) == connect.CodeInternal {
 				return nil, connect.NewError(connect.CodeInternal, err)
 			}
 			return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("confirmation of payee token is invalid"))

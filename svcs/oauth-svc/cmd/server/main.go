@@ -52,11 +52,10 @@ func (s service) Token(ctx context.Context, request *v1.TokenRequest) (*v1.Token
 		Password: request.Password,
 	})
 	if err != nil {
+		if connect.CodeOf(err) == connect.CodeUnauthenticated {
+			return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("incorrect email or password"))
+		}
 		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-
-	if response.Id == nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("incorrect email or password"))
 	}
 
 	id, err := s.identityServiceClient.ID(ctx, &emptypb.Empty{})
@@ -71,8 +70,7 @@ func (s service) Token(ctx context.Context, request *v1.TokenRequest) (*v1.Token
 		UserAgent: request.UserAgent,
 	}
 
-	err = d.Insert(ctx, s.db)
-	if err != nil {
+	if err = d.Insert(ctx, s.db); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
@@ -91,8 +89,7 @@ func (s service) Token(ctx context.Context, request *v1.TokenRequest) (*v1.Token
 		},
 	}
 
-	err = accessToken.Insert(ctx, s.db)
-	if err != nil {
+	if err = accessToken.Insert(ctx, s.db); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
@@ -102,8 +99,7 @@ func (s service) Token(ctx context.Context, request *v1.TokenRequest) (*v1.Token
 	}
 
 	b := make([]byte, 32)
-	_, err = rand.Read(b)
-	if err != nil {
+	if _, err = rand.Read(b); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
@@ -123,8 +119,7 @@ func (s service) Token(ctx context.Context, request *v1.TokenRequest) (*v1.Token
 		Hash: hashString,
 	}
 
-	err = refreshToken.Insert(ctx, s.db)
-	if err != nil {
+	if err = refreshToken.Insert(ctx, s.db); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
