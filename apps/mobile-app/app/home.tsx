@@ -288,25 +288,19 @@ export default function Home() {
 						{totalSpent && (
 							<Section title="Your spending">
 								<View style={styles.row}>
-									<ThemedText style={styles.label}>
-										Total Spent Today
-									</ThemedText>
+									<ThemedText style={styles.label}>Spent Today</ThemedText>
 									<ThemedText style={styles.value}>
 										{totalSpent.today}
 									</ThemedText>
 								</View>
 								<View style={styles.row}>
-									<ThemedText style={styles.label}>
-										Total Spent This Week
-									</ThemedText>
+									<ThemedText style={styles.label}>Spent This Week</ThemedText>
 									<ThemedText style={styles.value}>
 										{totalSpent.thisWeek}
 									</ThemedText>
 								</View>
 								<View style={[styles.row, styles.noBorder]}>
-									<ThemedText style={styles.label}>
-										Total Spent This Month
-									</ThemedText>
+									<ThemedText style={styles.label}>Spent This Month</ThemedText>
 									<ThemedText style={styles.value}>
 										{totalSpent.thisMonth}
 									</ThemedText>
