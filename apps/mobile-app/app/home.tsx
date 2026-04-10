@@ -16,15 +16,24 @@ import { TransactionList } from "@/components/transaction-list";
 import { useAuthStore } from "@/store/auth";
 import { usePaymentsStore } from "@/store/payments";
 
+const formatCurrency = (amount: bigint, currencyCode: string): string => {
+	return new Intl.NumberFormat("en-GB", {
+		style: "currency",
+		currency: currencyCode || "GBP",
+	}).format(Number(amount) / 100);
+};
+
 export default function Home() {
 	const theme = useTheme();
 	const { showActionSheetWithOptions } = useActionSheet();
 	const { account, setAccount, reset } = useAuthStore();
 	const { payments: transactions, setPayments } = usePaymentsStore();
 	const [balance, setBalance] = useState<string | null>(null);
-	const [spending, setSpending] = useState<GetTotalSpendingResponse | null>(
-		null,
-	);
+	const [totalSpent, setTotalSpent] = useState<{
+		today: string;
+		thisWeek: string;
+		thisMonth: string;
+	} | null>(null);
 
 	const onPressHelp = () => {
 		showActionSheetWithOptions(
@@ -69,15 +78,9 @@ export default function Home() {
 		if (account) {
 			trpc.balance.getBalances
 				.query()
-				.then((res) => {
-					const amount = Number(res.availableBalance) / 100;
-					setBalance(
-						new Intl.NumberFormat("en-GB", {
-							style: "currency",
-							currency: res.currencyCode || "GBP",
-						}).format(amount),
-					);
-				})
+				.then((res) =>
+					setBalance(formatCurrency(res.availableBalance, res.currencyCode)),
+				)
 				.catch((err) => {
 					console.error(err);
 					Alert.alert(
@@ -106,7 +109,11 @@ export default function Home() {
 		trpc.spending.getTotalSpending
 			.query()
 			.then((res) => {
-				setSpending(res);
+				setTotalSpent({
+					today: formatCurrency(res.totalSpentToday, res.currencyCode),
+					thisWeek: formatCurrency(res.totalSpentThisWeek, res.currencyCode),
+					thisMonth: formatCurrency(res.totalSpentThisMonth, res.currencyCode),
+				});
 			})
 			.catch((err) => {
 				console.error("Failed to load total spending", err);
@@ -278,14 +285,14 @@ export default function Home() {
 							</ThemedButton>
 						</View>
 
-						{spending && (
+						{totalSpent && (
 							<Section title="Your spending">
 								<View style={styles.row}>
 									<ThemedText style={styles.label}>
 										Total Spent Today
 									</ThemedText>
 									<ThemedText style={styles.value}>
-										{spending.totalSpentToday}
+										{totalSpent.today}
 									</ThemedText>
 								</View>
 								<View style={styles.row}>
@@ -293,7 +300,7 @@ export default function Home() {
 										Total Spent This Week
 									</ThemedText>
 									<ThemedText style={styles.value}>
-										{spending.totalSpentThisWeek}
+										{totalSpent.thisWeek}
 									</ThemedText>
 								</View>
 								<View style={[styles.row, styles.noBorder]}>
@@ -301,7 +308,7 @@ export default function Home() {
 										Total Spent This Month
 									</ThemedText>
 									<ThemedText style={styles.value}>
-										{spending.totalSpentThisMonth}
+										{totalSpent.thisMonth}
 									</ThemedText>
 								</View>
 							</Section>

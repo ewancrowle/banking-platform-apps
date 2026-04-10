@@ -89,9 +89,9 @@ func (s service) GetTotalSpending(ctx context.Context, request *v1.GetTotalSpend
 	}
 
 	return &v1.GetTotalSpendingResponse{
-		TotalSpentToday:     sp.Today,
-		TotalSpentThisWeek:  sp.ThisWeek,
-		TotalSpentThisMonth: sp.ThisMonth,
+		TotalSpentToday:     -sp.Today,
+		TotalSpentThisWeek:  -sp.ThisWeek,
+		TotalSpentThisMonth: -sp.ThisMonth,
 		CurrencyCode:        a.CurrencyCode,
 	}, nil
 }
