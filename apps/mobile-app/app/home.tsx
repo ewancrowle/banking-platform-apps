@@ -3,12 +3,13 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@react-navigation/native";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
-import type { Payment } from "protos/payment";
+import type { GetTotalSpendingResponse } from "protos/ledger";
 import { useEffect, useState } from "react";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { getAccount } from "@/api/auth";
 import trpc from "@/api/trpc";
+import { Section } from "@/components/section";
 import { ThemedButton } from "@/components/themed-button";
 import { ThemedText } from "@/components/themed-text";
 import { TransactionList } from "@/components/transaction-list";
@@ -21,6 +22,9 @@ export default function Home() {
 	const { account, setAccount, reset } = useAuthStore();
 	const { payments: transactions, setPayments } = usePaymentsStore();
 	const [balance, setBalance] = useState<string | null>(null);
+	const [spending, setSpending] = useState<GetTotalSpendingResponse | null>(
+		null,
+	);
 
 	const onPressHelp = () => {
 		showActionSheetWithOptions(
@@ -96,11 +100,100 @@ export default function Home() {
 					console.error("Failed to load transactions", err);
 				});
 		}
-	}, [account]);
+	}, [account, setPayments]);
+
+	useEffect(() => {
+		trpc.spending.getTotalSpending
+			.query()
+			.then((res) => {
+				setSpending(res);
+			})
+			.catch((err) => {
+				console.error("Failed to load total spending", err);
+			});
+	}, []);
 
 	const initials = account
 		? `${account.firstName[0]}${account.lastName[0]}`.toUpperCase()
 		: "??";
+
+	const styles = StyleSheet.create({
+		container: {
+			flex: 1,
+		},
+		headerContainer: {
+			paddingHorizontal: 16,
+			gap: 24,
+		},
+		accountInfoContainer: {
+			alignItems: "flex-start",
+			gap: 2,
+		},
+		accountDetails: {
+			flexDirection: "row",
+			alignItems: "center",
+			gap: 6,
+		},
+		balanceContainer: {
+			alignItems: "center",
+			gap: 8,
+		},
+		buttonContainer: {
+			flexDirection: "row",
+			gap: 8,
+		},
+		flexButton: {
+			flex: 1,
+			width: "auto",
+		},
+		topBar: {
+			flexDirection: "row",
+			justifyContent: "space-between",
+			alignItems: "center",
+		},
+		profileCircle: {
+			width: 48,
+			height: 48,
+			borderRadius: 24,
+			backgroundColor: "#00F",
+			justifyContent: "center",
+			alignItems: "center",
+		},
+		initialsText: {
+			fontSize: 18,
+			color: "#fff",
+		},
+		helpButton: {
+			flexDirection: "row",
+			alignItems: "center",
+			gap: 8,
+		},
+		buttonPressed: {
+			opacity: 0.7,
+			transform: [{ scale: 0.98 }],
+		},
+		row: {
+			flexDirection: "row",
+			justifyContent: "space-between",
+			alignItems: "center",
+			paddingBottom: 12,
+			paddingRight: 16,
+			borderBottomWidth: 1,
+			borderBottomColor: theme.colors.border,
+		},
+		noBorder: {
+			borderBottomWidth: 0,
+		},
+		label: {
+			fontSize: 16,
+			fontWeight: "500",
+			opacity: 0.7,
+		},
+		value: {
+			fontSize: 16,
+			textAlign: "right",
+		},
+	});
 
 	return (
 		<SafeAreaView style={styles.container}>
@@ -184,6 +277,36 @@ export default function Home() {
 								Spend money
 							</ThemedButton>
 						</View>
+
+						{spending && (
+							<Section title="Your spending">
+								<View style={styles.row}>
+									<ThemedText style={styles.label}>
+										Total Spent Today
+									</ThemedText>
+									<ThemedText style={styles.value}>
+										{spending.totalSpentToday}
+									</ThemedText>
+								</View>
+								<View style={styles.row}>
+									<ThemedText style={styles.label}>
+										Total Spent This Week
+									</ThemedText>
+									<ThemedText style={styles.value}>
+										{spending.totalSpentThisWeek}
+									</ThemedText>
+								</View>
+								<View style={[styles.row, styles.noBorder]}>
+									<ThemedText style={styles.label}>
+										Total Spent This Month
+									</ThemedText>
+									<ThemedText style={styles.value}>
+										{spending.totalSpentThisMonth}
+									</ThemedText>
+								</View>
+							</Section>
+						)}
+
 						<ThemedText
 							style={{
 								fontSize: 18,
@@ -198,60 +321,3 @@ export default function Home() {
 		</SafeAreaView>
 	);
 }
-
-const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-	},
-	headerContainer: {
-		paddingHorizontal: 16,
-		gap: 24,
-	},
-	accountInfoContainer: {
-		alignItems: "flex-start",
-		gap: 2,
-	},
-	accountDetails: {
-		flexDirection: "row",
-		alignItems: "center",
-		gap: 6,
-	},
-	balanceContainer: {
-		alignItems: "center",
-		gap: 8,
-	},
-	buttonContainer: {
-		flexDirection: "row",
-		gap: 8,
-	},
-	flexButton: {
-		flex: 1,
-		width: "auto",
-	},
-	topBar: {
-		flexDirection: "row",
-		justifyContent: "space-between",
-		alignItems: "center",
-	},
-	profileCircle: {
-		width: 48,
-		height: 48,
-		borderRadius: 24,
-		backgroundColor: "#00F",
-		justifyContent: "center",
-		alignItems: "center",
-	},
-	initialsText: {
-		fontSize: 18,
-		color: "#fff",
-	},
-	helpButton: {
-		flexDirection: "row",
-		alignItems: "center",
-		gap: 8,
-	},
-	buttonPressed: {
-		opacity: 0.7,
-		transform: [{ scale: 0.98 }],
-	},
-});

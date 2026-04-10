@@ -164,7 +164,7 @@ export default function TransactionInfo() {
 							{merchant.shortDescriptor}
 						</ThemedText>
 					</View>
-					<View style={styles.row}>
+					<View style={[styles.row, styles.noBorder]}>
 						<ThemedText style={styles.label}>Address</ThemedText>
 						<ThemedText style={styles.value}>{getMerchantAddress()}</ThemedText>
 					</View>
