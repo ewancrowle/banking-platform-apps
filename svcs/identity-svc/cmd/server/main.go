@@ -5,6 +5,7 @@ import (
 	"fmt"
 	v1 "identity-svc/gen/identity/v1"
 	"identity-svc/gen/identity/v1/identityv1connect"
+	"identity-svc/pkg/config"
 	"log"
 	"net/http"
 
@@ -12,11 +13,6 @@ import (
 	"github.com/sony/sonyflake/v2"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
-
-type config struct {
-	Port      int `default:"8080"`
-	MachineID int `envconfig:"machine_id" required:"true"`
-}
 
 type service struct {
 	identityv1connect.IdentityServiceHandler
@@ -32,9 +28,8 @@ func (s service) ID(_ context.Context, _ *emptypb.Empty) (*v1.IDResponse, error)
 }
 
 func main() {
-	var c config
-	err := envconfig.Process("", &c)
-	if err != nil {
+	var c config.Config
+	if err := envconfig.Process("", &c); err != nil {
 		log.Fatal(err.Error())
 	}
 
@@ -62,8 +57,7 @@ func main() {
 		Protocols: p,
 	}
 
-	err = s.ListenAndServe()
-	if err != nil {
+	if err := s.ListenAndServe(); err != nil {
 		log.Fatal(err.Error())
 	}
 }

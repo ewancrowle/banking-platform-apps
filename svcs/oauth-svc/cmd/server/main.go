@@ -16,6 +16,7 @@ import (
 	"net/http"
 	v1 "oauth-svc/gen/oauth/v1"
 	"oauth-svc/gen/oauth/v1/oauthv1connect"
+	"oauth-svc/pkg/config"
 	"oauth-svc/pkg/model/device"
 	"oauth-svc/pkg/model/token"
 	"strconv"
@@ -31,17 +32,6 @@ import (
 	"github.com/uptrace/bun/extra/bundebug"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
-
-type config struct {
-	Port                int    `default:"8080"`
-	IdentityServiceAddr string `required:"true" split_words:"true"`
-	AccountServiceAddr  string `required:"true" split_words:"true"`
-	JWTSecret           string `envconfig:"jwt_secret" required:"true"`
-	DBHost              string `envconfig:"db_host" required:"true"`
-	DBName              string `envconfig:"db_name" required:"true"`
-	DBUsername          string `envconfig:"db_username" required:"true"`
-	DBPassword          string `envconfig:"db_password" required:"true"`
-}
 
 type service struct {
 	oauthv1connect.OAuthServiceHandler
@@ -297,9 +287,8 @@ func (s service) Introspect(ctx context.Context, request *v1.IntrospectRequest) 
 }
 
 func main() {
-	var c config
-	err := envconfig.Process("", &c)
-	if err != nil {
+	var c config.Config
+	if err := envconfig.Process("", &c); err != nil {
 		log.Fatal(err.Error())
 	}
 
@@ -348,8 +337,7 @@ func main() {
 		Protocols: p,
 	}
 
-	err = s.ListenAndServe()
-	if err != nil {
+	if err := s.ListenAndServe(); err != nil {
 		log.Fatal(err.Error())
 	}
 }

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	v1 "ledger-svc/gen/ledger/v1"
 	"ledger-svc/gen/ledger/v1/ledgerv1connect"
+	"ledger-svc/pkg/config"
 	"log"
 	"net/http"
 	"payment-svc/pkg/model/payment"
@@ -17,12 +18,6 @@ import (
 	"github.com/uptrace/go-clickhouse/ch"
 	"github.com/uptrace/go-clickhouse/chdebug"
 )
-
-type config struct {
-	Port               int    `default:"8080"`
-	AccountServiceAddr string `required:"true" split_words:"true"`
-	ClickHouseURL      string `envconfig:"clickhouse_url" required:"true"`
-}
 
 type service struct {
 	ledgerv1connect.LedgerServiceHandler
@@ -102,9 +97,8 @@ func (s service) GetTotalSpending(ctx context.Context, request *v1.GetTotalSpend
 }
 
 func main() {
-	var c config
-	err := envconfig.Process("", &c)
-	if err != nil {
+	var c config.Config
+	if err := envconfig.Process("", &c); err != nil {
 		log.Fatal(err.Error())
 	}
 
@@ -139,8 +133,7 @@ func main() {
 		Protocols: p,
 	}
 
-	err = s.ListenAndServe()
-	if err != nil {
+	if err := s.ListenAndServe(); err != nil {
 		log.Fatal(err.Error())
 	}
 }

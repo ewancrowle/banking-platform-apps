@@ -11,6 +11,7 @@ import (
 	"net/http"
 	v1 "payment-decision-svc/gen/payment_decision/v1"
 	"payment-decision-svc/gen/payment_decision/v1/payment_decisionv1connect"
+	"payment-decision-svc/pkg/config"
 
 	"connectrpc.com/connect"
 	"connectrpc.com/validate"
@@ -21,16 +22,6 @@ import (
 	"github.com/uptrace/bun/extra/bundebug"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
-
-type config struct {
-	Port                int    `default:"8080"`
-	IdentityServiceAddr string `required:"true" split_words:"true"`
-	LedgerServiceAddr   string `required:"true" split_words:"true"`
-	DBHost              string `envconfig:"db_host" required:"true"`
-	DBName              string `envconfig:"db_name" required:"true"`
-	DBUsername          string `envconfig:"db_username" required:"true"`
-	DBPassword          string `envconfig:"db_password" required:"true"`
-}
 
 type service struct {
 	payment_decisionv1connect.PaymentDecisionServiceHandler
@@ -69,9 +60,8 @@ func (s service) DecidePayment(ctx context.Context, request *v1.DecidePaymentReq
 }
 
 func main() {
-	var c config
-	err := envconfig.Process("", &c)
-	if err != nil {
+	var c config.Config
+	if err := envconfig.Process("", &c); err != nil {
 		log.Fatal(err.Error())
 	}
 
@@ -119,8 +109,7 @@ func main() {
 		Protocols: p,
 	}
 
-	err = s.ListenAndServe()
-	if err != nil {
+	if err := s.ListenAndServe(); err != nil {
 		log.Fatal(err.Error())
 	}
 }

@@ -9,6 +9,7 @@ import (
 	"log"
 	v1 "merchant-svc/gen/merchant/v1"
 	"merchant-svc/gen/merchant/v1/merchantv1connect"
+	"merchant-svc/pkg/config"
 	"merchant-svc/pkg/model/merchant"
 	"net/http"
 
@@ -21,15 +22,6 @@ import (
 	"github.com/uptrace/bun/extra/bundebug"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
-
-type config struct {
-	Port                int    `default:"8080"`
-	IdentityServiceAddr string `required:"true" split_words:"true"`
-	DBHost              string `envconfig:"db_host" required:"true"`
-	DBName              string `envconfig:"db_name" required:"true"`
-	DBUsername          string `envconfig:"db_username" required:"true"`
-	DBPassword          string `envconfig:"db_password" required:"true"`
-}
 
 type service struct {
 	merchantv1connect.MerchantServiceHandler
@@ -112,9 +104,8 @@ func (s service) GetAllMerchants(ctx context.Context, req *emptypb.Empty) (*v1.G
 }
 
 func main() {
-	var c config
-	err := envconfig.Process("", &c)
-	if err != nil {
+	var c config.Config
+	if err := envconfig.Process("", &c); err != nil {
 		log.Fatal(err.Error())
 	}
 
@@ -156,8 +147,7 @@ func main() {
 		Protocols: p,
 	}
 
-	err = s.ListenAndServe()
-	if err != nil {
+	if err := s.ListenAndServe(); err != nil {
 		log.Fatal(err.Error())
 	}
 }

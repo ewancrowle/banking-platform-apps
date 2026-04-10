@@ -20,6 +20,7 @@ import (
 	"payment-decision-svc/pkg/model/paymentdecision"
 	v1 "payment-svc/gen/payment/v1"
 	"payment-svc/gen/payment/v1/paymentv1connect"
+	"payment-svc/pkg/config"
 	"payment-svc/pkg/model/payment"
 	"strings"
 	"time"
@@ -35,19 +36,6 @@ import (
 	"github.com/uptrace/bun/extra/bundebug"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
-
-type config struct {
-	Port                       int      `default:"8080"`
-	IdentityServiceAddr        string   `required:"true" split_words:"true"`
-	AccountServiceAddr         string   `required:"true" split_words:"true"`
-	MerchantServiceAddr        string   `required:"true" split_words:"true"`
-	PaymentDecisionServiceAddr string   `required:"true" split_words:"true"`
-	DBHost                     string   `envconfig:"db_host" required:"true"`
-	DBName                     string   `envconfig:"db_name" required:"true"`
-	DBUsername                 string   `envconfig:"db_username" required:"true"`
-	DBPassword                 string   `envconfig:"db_password" required:"true"`
-	KafkaBrokers               []string `required:"true" split_words:"true"`
-}
 
 type service struct {
 	paymentv1connect.PaymentServiceHandler
@@ -426,9 +414,8 @@ func (s service) GetPayments(ctx context.Context, req *v1.GetPaymentsRequest) (*
 }
 
 func main() {
-	var c config
-	err := envconfig.Process("", &c)
-	if err != nil {
+	var c config.Config
+	if err := envconfig.Process("", &c); err != nil {
 		log.Fatal(err.Error())
 	}
 
@@ -494,8 +481,7 @@ func main() {
 		Protocols: p,
 	}
 
-	err = s.ListenAndServe()
-	if err != nil {
+	if err := s.ListenAndServe(); err != nil {
 		log.Fatal(err.Error())
 	}
 }
