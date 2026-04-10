@@ -154,7 +154,7 @@ func (s service) AuthorisePayment(ctx context.Context, request *v1.AuthorisePaym
 
 	if err := s.kafkaCl.ProduceSync(ctx, &kgo.Record{
 		Value: b,
-		Topic: "payments",
+		Topic: "payment_progress",
 	}).FirstErr(); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -176,19 +176,31 @@ func (s service) AuthorisePayment(ctx context.Context, request *v1.AuthorisePaym
 	switch d.Decision {
 	case paymentdecisionv1.Decision_DECISION_UNSPECIFIED:
 		return nil, connect.NewError(connect.CodeInternal, errors.New("unspecified decision"))
+
 	case paymentdecisionv1.Decision_DECISION_DECLINED:
 		p.Status = payment.StatusDeclined
+
 		dr := paymentdecision.DeclineReason(d.DeclineReason.Number())
 		p.DeclineReason = &dr
-
 		if err = p.SetDeclineReason(ctx, s.db, dr); err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
+
+		p.UpdatedAt = time.Now()
+		if err = p.SetUpdatedAt(ctx, s.db, p.UpdatedAt); err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+
 	default:
 		p.Status = payment.StatusAuthorised
 	}
 
 	if err = p.SetStatus(ctx, s.db, p.Status); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	p.UpdatedAt = time.Now()
+	if err = p.SetUpdatedAt(ctx, s.db, p.UpdatedAt); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
@@ -199,7 +211,7 @@ func (s service) AuthorisePayment(ctx context.Context, request *v1.AuthorisePaym
 
 	if err := s.kafkaCl.ProduceSync(ctx, &kgo.Record{
 		Value: b,
-		Topic: "payments",
+		Topic: "payment_progress",
 	}).FirstErr(); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -217,12 +229,18 @@ func (s service) IncrementPayment(ctx context.Context, request *v1.IncrementPaym
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	p.Amount += request.ReplacementAmount
+	p.Amount = request.ReplacementAmount
 	if err := p.SetAmount(ctx, s.db, p.Amount); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
+	p.UpdatedAt = time.Now()
+	if err := p.SetUpdatedAt(ctx, s.db, p.UpdatedAt); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
 	p.Status = payment.StatusIncremented
+	// Incremented status is not stored in the SQL database, so we don't need to update it here.
 
 	b, err := json.Marshal(p)
 	if err != nil {
@@ -231,7 +249,7 @@ func (s service) IncrementPayment(ctx context.Context, request *v1.IncrementPaym
 
 	if err := s.kafkaCl.ProduceSync(ctx, &kgo.Record{
 		Value: b,
-		Topic: "payments",
+		Topic: "payment_progress",
 	}).FirstErr(); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -245,16 +263,31 @@ func (s service) CapturePayment(ctx context.Context, request *v1.CapturePaymentR
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
+	if p.Status != payment.StatusAuthorised {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("payment is not authorised"))
+	} else if p.Status == payment.StatusCaptured {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("payment is already captured"))
+	}
+
 	if request.ReplacementAmount != nil {
 		p.Amount = p.Type.GetCorrectDirection(*request.ReplacementAmount)
 		if err := p.SetAmount(ctx, s.db, p.Amount); err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
+
+		p.UpdatedAt = time.Now()
+		if err := p.SetUpdatedAt(ctx, s.db, p.UpdatedAt); err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
 	}
 
 	p.Status = payment.StatusCaptured
-
 	if err := p.SetStatus(ctx, s.db, p.Status); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	p.UpdatedAt = time.Now()
+	if err := p.SetUpdatedAt(ctx, s.db, p.UpdatedAt); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
@@ -265,7 +298,7 @@ func (s service) CapturePayment(ctx context.Context, request *v1.CapturePaymentR
 
 	if err := s.kafkaCl.ProduceSync(ctx, &kgo.Record{
 		Value: b,
-		Topic: "payments",
+		Topic: "payment_progress",
 	}).FirstErr(); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -280,8 +313,12 @@ func (s service) ExpirePayment(ctx context.Context, request *v1.ExpirePaymentReq
 	}
 
 	p.Status = payment.StatusExpired
-
 	if err := p.SetStatus(ctx, s.db, p.Status); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	p.UpdatedAt = time.Now()
+	if err := p.SetUpdatedAt(ctx, s.db, p.UpdatedAt); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
@@ -292,7 +329,7 @@ func (s service) ExpirePayment(ctx context.Context, request *v1.ExpirePaymentReq
 
 	if err := s.kafkaCl.ProduceSync(ctx, &kgo.Record{
 		Value: b,
-		Topic: "payments",
+		Topic: "payment_progress",
 	}).FirstErr(); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -307,8 +344,12 @@ func (s service) VoidPayment(ctx context.Context, request *v1.VoidPaymentRequest
 	}
 
 	p.Status = payment.StatusVoided
-
 	if err := p.SetStatus(ctx, s.db, p.Status); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	p.UpdatedAt = time.Now()
+	if err := p.SetUpdatedAt(ctx, s.db, p.UpdatedAt); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
@@ -319,7 +360,7 @@ func (s service) VoidPayment(ctx context.Context, request *v1.VoidPaymentRequest
 
 	if err := s.kafkaCl.ProduceSync(ctx, &kgo.Record{
 		Value: b,
-		Topic: "payments",
+		Topic: "payment_progress",
 	}).FirstErr(); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -374,6 +415,7 @@ func (s service) GetPayments(ctx context.Context, req *v1.GetPaymentsRequest) (*
 			Status:           string(p.Status),
 			Description:      p.Description,
 			CreatedAt:        p.CreatedAt.String(),
+			UpdatedAt:        p.UpdatedAt.String(),
 			OtherAccountName: otherAccountName,
 			Merchant:         merchant,
 			DeclineReason:    &declineReason,

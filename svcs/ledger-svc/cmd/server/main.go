@@ -4,13 +4,13 @@ import (
 	accountv1 "account-svc/gen/account/v1"
 	"account-svc/gen/account/v1/accountv1connect"
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	v1 "ledger-svc/gen/ledger/v1"
 	"ledger-svc/gen/ledger/v1/ledgerv1connect"
 	"log"
 	"net/http"
+	"payment-svc/pkg/model/payment"
 
 	"connectrpc.com/connect"
 	"github.com/kelseyhightower/envconfig"
@@ -38,51 +38,67 @@ func (s service) GetBalances(ctx context.Context, request *v1.GetBalancesRequest
 		return nil, connect.NewError(connect.CodeNotFound, errors.New("account not found"))
 	}
 
-	var capturedAmount int64
-	err = s.chDB.NewSelect().
-		ColumnExpr("sum(total_amount) AS total_amount").
-		Table("total_amount_captured").
+	var currentBalance int64
+	if err = s.chDB.NewSelect().
+		ColumnExpr("sum(amount)").
+		Table("captured_payments_summed").
 		Where("account_id = ?", request.AccountId).
 		Where("currency_code = ?", a.CurrencyCode).
-		Scan(ctx, &capturedAmount)
-	if err != nil {
+		Scan(ctx, &currentBalance); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	var pendingAmount int64
-	inner := s.chDB.NewSelect().
-		ColumnExpr("sumMerge(authorised_amount) + sumMerge(incremented_amount) AS pending_amount").
-		Table("pending_payments").
+	var availableBalance int64
+	if err = s.chDB.NewSelect().
+		ColumnExpr("sum(amount)").
+		TableExpr("current_payments FINAL").
 		Where("account_id = ?", request.AccountId).
 		Where("currency_code = ?", a.CurrencyCode).
-		Group("id").
-		Having("maxMerge(is_captured) = 0").
-		String()
-	err = s.chDB.NewRaw("SELECT sum(pending_amount) AS total_amount FROM ("+inner+")").Scan(ctx, &pendingAmount)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, connect.NewError(connect.CodeInternal, err)
-		}
+		Where("status NOT IN (?)", []payment.Status{payment.StatusReceived, payment.StatusDeclined, payment.StatusExpired, payment.StatusVoided}).
+		Scan(ctx, &availableBalance); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
 	return &v1.GetBalancesResponse{
-		CurrentBalance:   capturedAmount,
-		AvailableBalance: capturedAmount + pendingAmount,
+		CurrentBalance:   currentBalance,
+		AvailableBalance: availableBalance,
 		CurrencyCode:     a.CurrencyCode,
 	}, nil
 }
 
 func (s service) GetTotalSpending(ctx context.Context, request *v1.GetTotalSpendingRequest) (*v1.GetTotalSpendingResponse, error) {
-	_, err := s.accountServiceClient.GetAccount(ctx, &accountv1.GetAccountRequest{
+	a, err := s.accountServiceClient.GetAccount(ctx, &accountv1.GetAccountRequest{
 		Id: request.AccountId,
 	})
 	if err != nil {
 		return nil, connect.NewError(connect.CodeNotFound, errors.New("account not found"))
 	}
 
-	//TODO implement me
-	panic("implement me")
+	type spending struct {
+		Today     int64 `ch:"today"`
+		ThisWeek  int64 `ch:"this_week"`
+		ThisMonth int64 `ch:"this_month"`
+	}
+
+	var sp spending
+	if err = s.chDB.NewSelect().
+		ColumnExpr("sumIf(amount, event_date = today()) AS today").
+		ColumnExpr("sumIf(amount, event_date >= toStartOfWeek(today())) AS this_week").
+		ColumnExpr("sumIf(amount, event_date >= toStartOfMonth(today())) AS this_month").
+		TableExpr("daily_outgoing_payments FINAL").
+		Where("account_id = ?", request.AccountId).
+		Where("currency_code = ?", a.CurrencyCode).
+		Where("status IN (?)", []string{"authorised", "captured"}).
+		Scan(ctx, &sp); err != nil {
+		return nil, err
+	}
+
+	return &v1.GetTotalSpendingResponse{
+		TotalSpentToday:     sp.Today,
+		TotalSpentThisWeek:  sp.ThisWeek,
+		TotalSpentThisMonth: sp.ThisMonth,
+		CurrencyCode:        a.CurrencyCode,
+	}, nil
 }
 
 func main() {

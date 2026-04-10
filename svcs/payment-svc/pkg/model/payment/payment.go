@@ -84,6 +84,7 @@ type Payment struct {
 	DeclineReason *paymentdecision.DeclineReason `bun:",nullzero" json:"decline_reason"`
 
 	CreatedAt time.Time `bun:",nullzero,notnull,default:current_timestamp" json:"created_at"`
+	UpdatedAt time.Time `bun:",nullzero,notnull,default:current_timestamp" json:"updated_at"`
 }
 
 func (p *Payment) Insert(ctx context.Context, db *bun.DB) error {
@@ -127,5 +128,10 @@ func (p *Payment) SetDeclineReason(ctx context.Context, db *bun.DB, reason payme
 
 func (p *Payment) SetAmount(ctx context.Context, db *bun.DB, amount int64) error {
 	_, err := db.NewUpdate().Model(p).Set("amount = ?", amount).WherePK().Exec(ctx)
+	return err
+}
+
+func (p *Payment) SetUpdatedAt(ctx context.Context, db *bun.DB, updatedAt time.Time) error {
+	_, err := db.NewUpdate().Model(p).Set("updated_at = ?", updatedAt).WherePK().Exec(ctx)
 	return err
 }
