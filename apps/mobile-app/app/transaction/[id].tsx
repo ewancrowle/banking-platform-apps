@@ -176,11 +176,11 @@ export default function TransactionInfo() {
 					<ThemedText style={styles.label}>Status</ThemedText>
 					{declineReason === DeclineReason.INSUFFICIENT_FUNDS ? (
 						<ThemedText style={[styles.value, { color: statusColor }]}>
-							{statusLabel}
+							{statusLabel} Due to Insufficient Funds
 						</ThemedText>
 					) : (
 						<ThemedText style={[styles.value, { color: statusColor }]}>
-							{statusLabel} Due to Insufficient Funds
+							{statusLabel}
 						</ThemedText>
 					)}
 				</View>
