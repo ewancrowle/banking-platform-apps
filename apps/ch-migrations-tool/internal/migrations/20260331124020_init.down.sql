@@ -1,25 +1,33 @@
-DROP TABLE pending_payments_mv;
+DROP TABLE daily_outgoing_payments_mv;
 
 --migration:split
 
-DROP TABLE pending_payments;
+DROP TABLE daily_outgoing_payments;
 
 --migration:split
 
-DROP TABLE total_amount_captured_mv;
+DROP TABLE current_payments_mv;
 
 --migration:split
 
-DROP TABLE total_amount_captured;
+DROP TABLE current_payments;
 
 --migration:split
 
-DROP TABLE payments_mv;
+DROP TABLE captured_payments_summed_mv;
 
 --migration:split
 
-DROP TABLE payments_queue;
+DROP TABLE captured_payments_summed;
 
 --migration:split
 
-DROP TABLE payments;
+DROP TABLE payment_progress_mv;
+
+--migration:split
+
+DROP TABLE payment_progress;
+
+--migration:split
+
+DROP TABLE payment_progress_queue;
