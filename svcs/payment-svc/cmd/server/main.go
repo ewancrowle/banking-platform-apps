@@ -84,7 +84,7 @@ func (s service) AuthorisePayment(ctx context.Context, request *v1.AuthorisePaym
 	correctedAmount := paymentType.GetCorrectDirection(request.Amount)
 	var otherAccountId *int64
 
-	if paymentType == payment.TypeAccountToAccount {
+	if paymentType == payment.TypeOutboundTransfer {
 		if request.ConfirmationOfPayeeToken == nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("confirmation of payee token is required"))
 		}
@@ -201,6 +201,63 @@ func (s service) AuthorisePayment(ctx context.Context, request *v1.AuthorisePaym
 		Topic: "payment_progress",
 	}).FirstErr(); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	if p.Type == payment.TypeOutboundTransfer && p.Status == payment.StatusAuthorised {
+		creditId, err := s.identityServiceClient.ID(ctx, &emptypb.Empty{})
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+
+		creditPayment := payment.Payment{
+			ID:             creditId.Id,
+			AccountID:      *p.OtherAccountID,
+			OtherAccountID: &p.AccountID,
+			Amount:         payment.TypeInboundTransfer.GetCorrectDirection(request.Amount),
+			CurrencyCode:   request.CurrencyCode,
+			Description:    request.Description,
+			Type:           payment.TypeInboundTransfer,
+			Status:         payment.StatusCaptured,
+			CreatedAt:      time.Now(),
+		}
+
+		if err = creditPayment.Insert(ctx, s.db); err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+
+		b, err = json.Marshal(creditPayment)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+
+		if err := s.kafkaCl.ProduceSync(ctx, &kgo.Record{
+			Value: b,
+			Topic: "payment_progress",
+		}).FirstErr(); err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+
+		p.Status = payment.StatusCaptured
+		if err := p.SetStatus(ctx, s.db, p.Status); err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+
+		p.UpdatedAt = time.Now()
+		if err = p.SetUpdatedAt(ctx, s.db, p.UpdatedAt); err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+
+		b, err = json.Marshal(p)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+
+		if err := s.kafkaCl.ProduceSync(ctx, &kgo.Record{
+			Value: b,
+			Topic: "payment_progress",
+		}).FirstErr(); err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
 	}
 
 	return &v1.AuthorisePaymentResponse{
@@ -391,11 +448,21 @@ func (s service) GetPayments(ctx context.Context, req *v1.GetPaymentsRequest) (*
 			declineReason = v1.DeclineReason(*p.DeclineReason)
 		}
 
+		var otherAccountData v1.OtherAccountData
+		if p.OtherAccountID != nil {
+			otherAccountData = v1.OtherAccountData{
+				FirstName:   p.OtherAccount.FirstName,
+				MiddleNames: &p.OtherAccount.MiddleNames,
+				LastName:    p.OtherAccount.LastName,
+			}
+		}
+
 		paymentResponses = append(paymentResponses, &v1.Payment{
 			Id:               p.ID,
 			AccountId:        p.AccountID,
 			MerchantId:       p.MerchantID,
 			OtherAccountId:   p.OtherAccountID,
+			OtherAccountData: &otherAccountData,
 			Amount:           p.Amount,
 			CurrencyCode:     p.CurrencyCode,
 			Type:             string(p.Type),

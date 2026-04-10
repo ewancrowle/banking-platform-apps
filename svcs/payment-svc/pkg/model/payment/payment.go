@@ -27,7 +27,8 @@ const (
 	TypeDeposit          Type   = "deposit"
 	TypeWithdrawal       Type   = "withdrawal"
 	TypeCard             Type   = "card"
-	TypeAccountToAccount Type   = "account_to_account"
+	TypeInboundTransfer  Type   = "inbound_transfer"
+	TypeOutboundTransfer Type   = "outbound_transfer"
 	TypeFee              Type   = "fee"
 	TypeInterest         Type   = "interest"
 	TypeRefund           Type   = "refund"
@@ -39,7 +40,8 @@ func GetType(s string) (Type, error) {
 	case TypeDeposit,
 		TypeWithdrawal,
 		TypeCard,
-		TypeAccountToAccount,
+		TypeOutboundTransfer,
+		TypeInboundTransfer,
 		TypeFee,
 		TypeInterest,
 		TypeRefund:
@@ -50,12 +52,12 @@ func GetType(s string) (Type, error) {
 
 func (t Type) GetCorrectDirection(v int64) int64 {
 	switch t {
-	case TypeDeposit, TypeInterest, TypeRefund:
+	case TypeDeposit, TypeInboundTransfer, TypeInterest, TypeRefund:
 		if v < 0 {
 			return -v
 		}
 		return v
-	case TypeWithdrawal, TypeCard, TypeAccountToAccount, TypeFee:
+	case TypeWithdrawal, TypeCard, TypeOutboundTransfer, TypeFee:
 		if v > 0 {
 			return -v
 		}

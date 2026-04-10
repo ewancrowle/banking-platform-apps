@@ -36,7 +36,8 @@ export function TransactionItem(payment: TransactionItemProps) {
 			deposit: "Deposit",
 			withdrawal: "Withdrawal",
 			card: "Card Payment",
-			account_to_account: "Transfer",
+			outbound_transfer: "Transfer",
+			inbound_transfer: "Transfer",
 		}[type] || type;
 
 	if (status === "declined") {

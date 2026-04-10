@@ -21,7 +21,9 @@ export function getPaymentIcon(
 				}
 			}
 			return "card-outline";
-		case "account_to_account":
+		case "outbound_transfer":
+			return "swap-horizontal-outline";
+		case "inbound_transfer":
 			return "swap-horizontal-outline";
 		default:
 			return "cash-outline";

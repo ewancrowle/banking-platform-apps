@@ -50,7 +50,8 @@ export default function TransactionInfo() {
 			deposit: "Deposit",
 			withdrawal: "Withdrawal",
 			card: "Card Payment",
-			account_to_account: "Transfer",
+			outbound_transfer: "Transfer",
+			inbound_transfer: "Transfer",
 		}[type as string] || type;
 
 	const statusLabel =

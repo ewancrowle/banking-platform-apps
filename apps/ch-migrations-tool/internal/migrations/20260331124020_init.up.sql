@@ -135,4 +135,4 @@ SELECT
     status,
     parseDateTime64BestEffort(updated_at, 3, 'UTC') AS updated_at
 FROM payment_progress_queue
-WHERE type IN ('withdrawal', 'card', 'account_to_account', 'fee');
+WHERE type IN ('withdrawal', 'card', 'outbound_transfer', 'fee');

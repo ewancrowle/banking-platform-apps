@@ -9,7 +9,13 @@ type PaymentsState = {
 	refresh: () => Promise<void>;
 };
 
-const VALID_TYPES = ["deposit", "withdrawal", "card", "account_to_account"];
+const VALID_TYPES = [
+	"deposit",
+	"withdrawal",
+	"card",
+	"outbound_transfer",
+	"inbound_transfer",
+];
 
 export const usePaymentsStore = create<PaymentsState>((set) => ({
 	payments: [],

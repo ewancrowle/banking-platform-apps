@@ -43,7 +43,7 @@ func (s service) DecidePayment(ctx context.Context, request *v1.DecidePaymentReq
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	if request.Type == "withdrawal" || request.Type == "card" || request.Type == "account_to_account" {
+	if request.Type == "withdrawal" || request.Type == "card" || request.Type == "outbound_transfer" {
 		if balances.AvailableBalance+request.Amount < 0 {
 			return &v1.DecidePaymentResponse{
 				Decision:      v1.Decision_DECISION_DECLINED,
