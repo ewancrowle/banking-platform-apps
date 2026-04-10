@@ -83,7 +83,7 @@ func (s service) GetTotalSpending(ctx context.Context, request *v1.GetTotalSpend
 		TableExpr("daily_outgoing_payments FINAL").
 		Where("account_id = ?", request.AccountId).
 		Where("currency_code = ?", a.CurrencyCode).
-		Where("status IN (?)", []string{"authorised", "captured"}).
+		Where("status IN (?)", ch.In([]string{"authorised", "captured"})).
 		Scan(ctx, &sp); err != nil {
 		return nil, err
 	}
