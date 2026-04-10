@@ -3,7 +3,7 @@ package main
 import (
 	v1 "account-svc/gen/account/v1"
 	"account-svc/gen/account/v1/accountv1connect"
-	"account-svc/internal/accountnum"
+	"account-svc/internal/luhn"
 	"account-svc/pkg/config"
 	"account-svc/pkg/model/account"
 	"context"
@@ -46,7 +46,7 @@ func (s service) CreateAccount(ctx context.Context, request *v1.CreateAccountReq
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	num, err := accountnum.GenerateAccountNumber()
+	num, err := luhn.Generate(8)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
