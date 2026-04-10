@@ -81,7 +81,5 @@ func (h *Handler) VerifyCredentials(ctx context.Context, r *accountv1.VerifyCred
 }
 
 func NewHandler(svc *Service) *Handler {
-	return &Handler{
-		svc: svc,
-	}
+	return &Handler{svc}
 }

@@ -12,11 +12,6 @@ type BunRepo struct {
 	db *bun.DB
 }
 
-// NewBunRepo creates a new BunRepo with the given database connection.
-func NewBunRepo(db *bun.DB) *BunRepo {
-	return &BunRepo{db: db}
-}
-
 // CreateAccount creates a new account in the database.
 func (r *BunRepo) CreateAccount(ctx context.Context, account *account.Account) (*account.Account, error) {
 	_, err := r.db.NewInsert().Model(account).Exec(ctx)
@@ -40,4 +35,9 @@ func (r *BunRepo) ReadAccountByEmail(ctx context.Context, email string) (*accoun
 // ExistsAccountByEmail checks if an account with the given email exists.
 func (r *BunRepo) ExistsAccountByEmail(ctx context.Context, email string) (bool, error) {
 	return r.db.NewSelect().Model((*account.Account)(nil)).Where("email = ?", email).Exists(ctx)
+}
+
+// NewBunRepo creates a new BunRepo with the given database connection.
+func NewBunRepo(db *bun.DB) *BunRepo {
+	return &BunRepo{db}
 }

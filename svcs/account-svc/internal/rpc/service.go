@@ -21,10 +21,7 @@ type Service struct {
 }
 
 func NewService(repo Repo, identitySvc identityv1c.IdentityServiceClient) *Service {
-	return &Service{
-		repo:        repo,
-		identitySvc: identitySvc,
-	}
+	return &Service{repo, identitySvc}
 }
 
 type NewAccountInfo struct {

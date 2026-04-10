@@ -6,10 +6,10 @@ import (
 )
 
 type Repo interface {
-	CreateAccount(ctx context.Context, account *account.Account) (*account.Account, error)
+	CreateAccount(context.Context, *account.Account) (*account.Account, error)
 
-	ReadAccountByID(ctx context.Context, id int64) (*account.Account, error)
-	ReadAccountByEmail(ctx context.Context, email string) (*account.Account, error)
+	ReadAccountByID(context.Context, int64) (*account.Account, error)
+	ReadAccountByEmail(context.Context, string) (*account.Account, error)
 
-	ExistsAccountByEmail(ctx context.Context, email string) (bool, error)
+	ExistsAccountByEmail(context.Context, string) (bool, error)
 }
