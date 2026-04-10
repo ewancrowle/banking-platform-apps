@@ -2,7 +2,7 @@ package migrations
 
 import (
 	"account-svc/pkg/model/account"
-	"confirmation-of-payee-svc/pkg/model/confirmationofpayee"
+	cop "confirmation-of-payee-svc/pkg/model/token"
 	"context"
 	"fmt"
 	"merchant-svc/pkg/model/merchant"
@@ -62,7 +62,7 @@ func init() {
 			}
 
 			_, err = tx.NewCreateTable().
-				Model((*confirmationofpayee.ConfirmationOfPayeeToken)(nil)).
+				Model((*cop.COPToken)(nil)).
 				IfNotExists().
 				WithForeignKeys().
 				Exec(ctx)
@@ -86,7 +86,7 @@ func init() {
 
 		return db.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
 			_, err := tx.NewDropTable().
-				Model((*confirmationofpayee.ConfirmationOfPayeeToken)(nil)).
+				Model((*cop.COPToken)(nil)).
 				IfExists().
 				Exec(ctx)
 			if err != nil {
