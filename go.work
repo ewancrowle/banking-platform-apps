@@ -11,4 +11,5 @@ use (
 	./svcs/oauth-svc
 	./svcs/payment-decision-svc
 	./svcs/payment-svc
+	./svcs/fraud-detection-svc
 )

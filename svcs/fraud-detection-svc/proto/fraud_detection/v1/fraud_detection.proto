@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package fraud_detection.v1;
+
+message ScorePaymentRequest {
+  int64 payment_id = 1;
+  int64 account_id = 2;
+  optional int64 merchant_id = 3;
+  optional int64 other_account_id = 4;
+  int64 amount = 5;
+  string currency_code = 6;
+  string type = 7;
+}
+
+enum PrescriptiveAction {
+  PRESCRIPTIVE_ACTION_UNSPECIFIED = 0;
+  PRESCRIPTIVE_ACTION_PERMIT = 1;
+  PRESCRIPTIVE_ACTION_PROBE = 2;
+  PRESCRIPTIVE_ACTION_PROHIBIT = 3;
+}
+
+message ScorePaymentResponse {
+  PrescriptiveAction prescriptive_action = 1;
+  float confidence = 2;
+  repeated string issues = 3;
+}
+
+enum OperatingMode {
+  OPERATING_MODE_UNSPECIFIED = 0;
+  OPERATING_MODE_TYPICAL = 1;
+  OPERATING_MODE_HEIGHTENED = 2;
+  OPERATING_MODE_RELAXED = 3;
+}
+
+message SetOperatingModeRequest {
+  OperatingMode mode = 1;
+}
+
+message SetOperatingModeResponse {
+  OperatingMode mode = 1;
+}
+
+service FraudDetectionService {
+  rpc ScorePayment(ScorePaymentRequest) returns (ScorePaymentResponse);
+  rpc SetOperatingMode(SetOperatingModeRequest) returns (SetOperatingModeResponse);
+}
