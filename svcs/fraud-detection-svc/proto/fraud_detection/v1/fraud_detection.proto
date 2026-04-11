@@ -21,15 +21,15 @@ enum PrescriptiveAction {
 
 message ScorePaymentResponse {
   PrescriptiveAction prescriptive_action = 1;
-  float confidence = 2;
+  double confidence = 2;
   repeated string issues = 3;
 }
 
 enum OperatingMode {
   OPERATING_MODE_UNSPECIFIED = 0;
-  OPERATING_MODE_TYPICAL = 1;
-  OPERATING_MODE_HEIGHTENED = 2;
-  OPERATING_MODE_RELAXED = 3;
+  OPERATING_MODE_BALANCED = 1;
+  OPERATING_MODE_STRICT = 2;
+  OPERATING_MODE_PERMISSIVE = 3;
 }
 
 message SetOperatingModeRequest {

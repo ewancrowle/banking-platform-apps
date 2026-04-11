@@ -1,16 +1,14 @@
 package engine
 
-import "sync"
-
 type OperatingMode int
 
 const (
-	ModeTypical OperatingMode = iota
-	ModeHeightened
-	ModeRelaxed
+	ModeBalanced OperatingMode = iota
+	ModeStrict
+	ModePermissive
 )
 
-type PrescriptiveAction int
+type PrescriptiveAction int32
 
 const (
 	ActionPermit PrescriptiveAction = iota
@@ -18,81 +16,30 @@ const (
 	ActionProhibit
 )
 
-type EngineParams struct {
-	TxWeight           float32 // Weighting for transactional indicators
-	BehaviourWeight    float32 // Weighting for behavioural indicators
-	ProbeLowerBound    float32 // Lower bound for probative prescriptive action
-	ProhibitLowerBound float32 // Lower bound for prohibitive prescriptive action
+type Risk struct {
+	Score      float64
+	Indicators []string
 }
 
-// Engine uses a weighted sum model to score and detect payment fraud.
-type Engine struct {
-	mu          sync.RWMutex
-	currentMode OperatingMode
-	modes       map[OperatingMode]EngineParams
+type Prescription struct {
+	Action     PrescriptiveAction
+	Confidence float64
 }
 
-func NewEngine(initialMode OperatingMode) *Engine {
-	return &Engine{
-		currentMode: initialMode,
-		modes: map[OperatingMode]EngineParams{
-			ModeTypical: {
-				TxWeight:           0.6,
-				BehaviourWeight:    0.4,
-				ProbeLowerBound:    0.4,
-				ProhibitLowerBound: 0.7,
-			},
-			ModeHeightened: {
-				TxWeight:           0.8,
-				BehaviourWeight:    0.2,
-				ProbeLowerBound:    0.2,
-				ProhibitLowerBound: 0.5,
-			},
-			ModeRelaxed: {
-				TxWeight:           0.4,
-				BehaviourWeight:    0.6,
-				ProbeLowerBound:    0.6,
-				ProhibitLowerBound: 0.8,
-			},
-		},
-	}
+type PaymentInfo struct {
+	PaymentID      int64
+	AccountID      int64
+	MerchantID     *int64
+	OtherAccountID *int64
+	Amount         int64
+	CurrencyCode   string
+	Type           string
 }
 
-func (e *Engine) GetParams() EngineParams {
-	e.mu.RLock()
-	defer e.mu.RUnlock()
-	return e.modes[e.currentMode]
-}
-
-func (e *Engine) SetMode(mode OperatingMode) {
-	e.mu.Lock()
-	defer e.mu.Unlock()
-	e.currentMode = mode
-}
-
-func invLerp(score, from, to float32) float32 {
-	if to <= from {
-		return 1.0
-	}
-	v := (score - from) / (to - from)
-	if v > 1.0 {
-		return 1.0
-	}
-	if v < 0.0 {
-		return 0.0
-	}
-	return v
-}
-
-func (e *Engine) Score(txRisk, bhRisk float32) (PrescriptiveAction, float32) {
-	p := e.GetParams()
-
-	score := (txRisk * p.TxWeight) + (bhRisk * p.BehaviourWeight)
-
-	if score < p.ProbeLowerBound {
-		return ActionPermit, invLerp(score, 0.0, p.ProbeLowerBound)
-	} else if score < p.ProhibitLowerBound {
-		return ActionProbe, invLerp(score, p.ProbeLowerBound, p.ProhibitLowerBound)
-	}
-	return ActionProhibit, invLerp(score, p.ProhibitLowerBound, 1.0)
+type ScoringEngine interface {
+	SetMode(mode OperatingMode)
+	GetMode() OperatingMode
+	Prescribe(txScore, bhScore float64) (Prescription, error)
+	ScoreTx(tx PaymentInfo) (Risk, error)
+	ScoreAccount(id int64) (Risk, error)
 }
