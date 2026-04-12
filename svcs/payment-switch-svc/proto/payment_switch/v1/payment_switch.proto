@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+package payment_switch.v1;
+
+import "buf/validate/validate.proto";
+
+// An inspired ISO 8583 (https://www.iso.org/standard/79451.html) message
+message Payload {
+  // The field number should correspond to the ISO 8583 field number
+  string message_type_id = 1 [(buf.validate.field).string.pattern = "^[0-9]{4}$"];
+  string account_number = 2 [(buf.validate.field).string.pattern = "^[0-9]{8}$"];
+  string processing_code = 3 [(buf.validate.field).string.pattern = "^[0-9]{6}$"];
+  int64 tx_amount = 4 [(buf.validate.field).int64.gt = 0];
+  optional int64 settlement_amount = 5 [(buf.validate.field).int64.gt = 0];
+  optional int64 billing_amount = 6 [(buf.validate.field).int64.gt = 0];
+  optional string transmission_date = 7 [(buf.validate.field).string.pattern = "^[0-9]{10}$"]; // MMDDhhmmss
+  // ... omitted for brevity
+  optional string systems_trace_audit_number = 11 [(buf.validate.field).string.pattern = "^[0-9]{6}$"]; // Abbrev. STAN
+  optional string local_tx_time = 12 [(buf.validate.field).string.pattern = "^[0-9]{6}$"]; // hhmmss
+  optional string local_tx_date = 13 [(buf.validate.field).string.pattern = "^[0-9]{4}$"]; // MMDD
+  // ... omitted
+  optional string settlement_date = 15 [(buf.validate.field).string.pattern = "^[0-9]{4}$"]; // MMDD
+  // ... omitted
+  optional string capture_date = 16 [(buf.validate.field).string.pattern = "^[0-9]{4}$"]; // MMDD
+  optional string mcc = 17 [(buf.validate.field).string.pattern = "^[0-9]{4}$"]; // Merchant Category Code
+  // ... omitted for brevity
+  optional string point_of_service_entry_mode = 18 [(buf.validate.field).string.pattern = "^[0-9]{1}$"];
+  // ... omitted for brevity
+  optional string point_of_service_condition_code = 25 [(buf.validate.field).string.pattern = "^[0-9]{2}$"];
+  // ... omitted for brevity
+  optional string authorisation_id = 38 [
+    (buf.validate.field).string.min_len = 1,
+    (buf.validate.field).string.max_len = 32
+  ];
+  optional string response_code = 39 [(buf.validate.field).string.pattern = "^[0-9]{2}$"];
+  // ... omitted for brevity
+  optional string card_acceptor_id = 40 [
+    (buf.validate.field).string.min_len = 1,
+    (buf.validate.field).string.max_len = 32
+  ];
+  // ... omitted for brevity
+  optional string tx_currency_code = 49 [(buf.validate.field).string.pattern = "^[0-9]{3}$"]; // Numeric ISO 4217 currency code
+  optional string settlement_currency_code = 50 [(buf.validate.field).string.pattern = "^[0-9]{3}$"]; // Numeric ISO 4217 currency code
+  // ... omitted for brevity
+  optional string from_account_id = 102 [
+    (buf.validate.field).string.min_len = 1,
+    (buf.validate.field).string.max_len = 32
+  ];
+  optional string to_account_id = 103 [
+    (buf.validate.field).string.min_len = 1,
+    (buf.validate.field).string.max_len = 32
+  ];
+}
+
+message PaymentSwitchRequest {
+  Payload payload = 1;
+}
+
+message PaymentSwitchResponse {
+  Payload payload = 1;
+}
+
+service PaymentSwitchService {
+  rpc SwitchPayment(PaymentSwitchRequest) returns (PaymentSwitchResponse);
+}

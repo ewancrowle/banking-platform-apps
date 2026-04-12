@@ -1,15 +1,16 @@
-go 1.26.1
+go 1.26.2
 
 use (
 	./apps/ch-migrations-tool
 	./apps/migrations-tool
 	./svcs/account-svc
 	./svcs/confirmation-of-payee-svc
+	./svcs/fraud-detection-svc
 	./svcs/identity-svc
 	./svcs/ledger-svc
 	./svcs/merchant-svc
 	./svcs/oauth-svc
 	./svcs/payment-decision-svc
 	./svcs/payment-svc
-	./svcs/fraud-detection-svc
+	./svcs/payment-switch-svc
 )
