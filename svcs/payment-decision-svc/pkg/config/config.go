@@ -3,8 +3,9 @@ package config
 type Config struct {
 	Port int `envconfig:"port" default:"8080"`
 
-	IdentityServiceAddr string `envconfig:"identity_service_addr" required:"true"`
-	LedgerServiceAddr   string `envconfig:"ledger_service_addr" required:"true"`
+	IdentityServiceAddr       string `envconfig:"identity_service_addr" required:"true"`
+	LedgerServiceAddr         string `envconfig:"ledger_service_addr" required:"true"`
+	FraudDetectionServiceAddr string `envconfig:"fraud_detection_service_addr" required:"true"`
 
 	DBHost     string `envconfig:"db_host" required:"true"`
 	DBName     string `envconfig:"db_name" required:"true"`

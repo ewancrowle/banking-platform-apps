@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	fraud_detectionv1 "fraud-detection-svc/gen/fraud_detection/v1"
+	"fraud-detection-svc/gen/fraud_detection/v1/fraud_detectionv1connect"
 	"identity-svc/gen/identity/v1/identityv1connect"
 	ledgerv1 "ledger-svc/gen/ledger/v1"
 	"ledger-svc/gen/ledger/v1/ledgerv1connect"
@@ -25,9 +27,10 @@ import (
 
 type service struct {
 	payment_decisionv1connect.PaymentDecisionServiceHandler
-	db                    *bun.DB
-	identityServiceClient identityv1connect.IdentityServiceClient
-	ledgerServiceClient   ledgerv1connect.LedgerServiceClient
+	db                          *bun.DB
+	identityServiceClient       identityv1connect.IdentityServiceClient
+	ledgerServiceClient         ledgerv1connect.LedgerServiceClient
+	fraudDetectionServiceClient fraud_detectionv1connect.FraudDetectionServiceClient
 }
 
 func (s service) DecidePayment(ctx context.Context, request *v1.DecidePaymentRequest) (*v1.DecidePaymentResponse, error) {
@@ -49,6 +52,24 @@ func (s service) DecidePayment(ctx context.Context, request *v1.DecidePaymentReq
 				Decision:      v1.Decision_DECISION_DECLINED,
 				DecisionId:    id.Id,
 				DeclineReason: v1.DeclineReason_DECLINE_REASON_INSUFFICIENT_FUNDS.Enum(),
+			}, nil
+		}
+
+		if p, err := s.fraudDetectionServiceClient.ScorePayment(ctx, &fraud_detectionv1.ScorePaymentRequest{
+			PaymentId:      request.PaymentId,
+			AccountId:      request.AccountId,
+			MerchantId:     request.MerchantId,
+			OtherAccountId: request.OtherAccountId,
+			Amount:         request.Amount,
+			CurrencyCode:   request.CurrencyCode,
+			Type:           request.Type,
+		}); err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		} else if p.PrescriptiveAction == fraud_detectionv1.PrescriptiveAction_PRESCRIPTIVE_ACTION_PROHIBIT {
+			return &v1.DecidePaymentResponse{
+				Decision:      v1.Decision_DECISION_DECLINED,
+				DecisionId:    id.Id,
+				DeclineReason: v1.DeclineReason_DECLINE_REASON_SUSPICIOUS_ACTIVITY.Enum(),
 			}, nil
 		}
 	}
@@ -88,10 +109,16 @@ func main() {
 		c.LedgerServiceAddr,
 	)
 
+	fraudDetectionServiceClient := fraud_detectionv1connect.NewFraudDetectionServiceClient(
+		http.DefaultClient,
+		c.FraudDetectionServiceAddr,
+	)
+
 	svc := service{
-		db:                    db,
-		identityServiceClient: identityServiceClient,
-		ledgerServiceClient:   ledgerServiceClient,
+		db:                          db,
+		identityServiceClient:       identityServiceClient,
+		ledgerServiceClient:         ledgerServiceClient,
+		fraudDetectionServiceClient: fraudDetectionServiceClient,
 	}
 
 	path, handler := payment_decisionv1connect.NewPaymentDecisionServiceHandler(svc, connect.WithInterceptors(validate.NewInterceptor()))
