@@ -15,4 +15,4 @@ managed:
   enabled: true
   override:
     - file_option: go_package_prefix
-      value: go-service-fraud-detection/gen
+      value: fraud-detection-svc/gen
