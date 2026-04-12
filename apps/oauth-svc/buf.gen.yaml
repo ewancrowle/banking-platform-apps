@@ -10,7 +10,7 @@ plugins:
       - paths=source_relative
       - simple
   - remote: buf.build/bufbuild/es
-    out: ../../packages/protos/gen/oauth
+    out: ../../packages/ts-protos/gen/oauth
     opt:
       - target=ts
     include_imports: true

@@ -10,7 +10,7 @@ plugins:
       - paths=source_relative
       - simple
   - remote: buf.build/bufbuild/es
-    out: ../../packages/protos/gen/confirmation_of_payee
+    out: ../../packages/ts-protos/gen/confirmation_of_payee
     opt: target=ts
     include_imports: true
 inputs:

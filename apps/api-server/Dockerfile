@@ -5,7 +5,7 @@ WORKDIR /usr/src/app
 # Copy package files
 COPY package.json bun.lock ./
 COPY apps/api-server/package.json ./apps/api-server/
-COPY packages/protos/package.json ./packages/protos/
+COPY packages/package.json ./packages/ts-protos/
 
 # Install only production dependencies
 RUN rm bun.lock && bun install
@@ -19,7 +19,7 @@ COPY --from=build /usr/src/app ./
 
 # Copy actual source code for the app and its internal workspace dependency
 COPY apps/api-server ./apps/api-server/
-COPY packages/protos ./packages/protos/
+COPY packages/protos ./packages/ts-protos/
 
 # Set the final working directory
 WORKDIR /usr/src/app/apps/api-server

@@ -10,7 +10,7 @@ plugins:
       - paths=source_relative
       - simple
   - remote: buf.build/bufbuild/es
-    out: ../../packages/protos/gen/ledger
+    out: ../../packages/ts-protos/gen/ledger
     opt: target=ts
     include_imports: true
 inputs:
