@@ -4,7 +4,7 @@ package payment_switch.v1;
 
 import "buf/validate/validate.proto";
 
-// An inspired ISO 8583 (https://www.iso.org/standard/79451.html) message
+// An ISO 8583 (https://www.iso.org/standard/79451.html) inspired message
 message Payload {
   // The field number should correspond to the ISO 8583 field number
   string message_type_id = 1 [(buf.validate.field).string.pattern = "^[0-9]{4}$"];
