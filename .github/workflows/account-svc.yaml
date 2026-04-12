@@ -2,6 +2,7 @@ on:
   push:
     paths:
       - "apps/identity-svc/**"
+      - "packages/go-luhn/**"
       - "apps/account-svc/**"
       - ".github/workflows/account-svc.yaml"
 jobs:

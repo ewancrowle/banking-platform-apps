@@ -1,11 +1,11 @@
 package rpc
 
 import (
-	"account-svc/internal/luhn"
 	"account-svc/pkg/model/account"
 	"context"
 	"database/sql"
 	"errors"
+	"go-luhn/pkg/luhn"
 	identityv1c "identity-svc/gen/identity/v1/identityv1connect"
 	"strings"
 

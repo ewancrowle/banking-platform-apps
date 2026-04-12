@@ -1,7 +1,7 @@
 package luhn_test
 
 import (
-	"account-svc/internal/luhn"
+	"go-luhn/pkg/luhn"
 	"testing"
 )
 
