@@ -1,7 +1,7 @@
 on:
   push:
     paths:
-      - "svcs/fraud-detection-svc/**"
+      - "apps/fraud-detection-svc/**"
       - ".github/workflows/fraud-detection-svc.yaml"
 jobs:
   build-and-push-image:
@@ -20,9 +20,9 @@ jobs:
       - uses: bufbuild/buf-action@v1
         with:
           setup_only: true
-      - run: buf generate svcs/fraud-detection-svc --template svcs/fraud-detection-svc/buf.gen.yaml --output svcs/fraud-detection-svc
+      - run: buf generate apps/fraud-detection-svc --template apps/fraud-detection-svc/buf.gen.yaml --output apps/fraud-detection-svc
       - name: Build
-        run: go build -v svcs/fraud-detection-svc/cmd/server/main.go
+        run: go build -v apps/fraud-detection-svc/cmd/server/main.go
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v4
         with:
@@ -44,4 +44,4 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          file: ./svcs/fraud-detection-svc/Dockerfile
+          file: ./apps/fraud-detection-svc/Dockerfile

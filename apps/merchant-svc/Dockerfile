@@ -8,7 +8,7 @@ COPY . .
 
 # Build the application
 # Using CGO_ENABLED=0 for a static binary that works with distroless/static
-RUN CGO_ENABLED=0 GOOS=linux go build -o /server svcs/merchant-svc/cmd/server/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -o /server apps/merchant-svc/cmd/server/main.go
 
 # Final stage
 FROM gcr.io/distroless/static-debian12

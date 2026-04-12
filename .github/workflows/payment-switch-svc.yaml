@@ -1,8 +1,8 @@
 on:
   push:
     paths:
-      - "svcs/payment-svc/**"
-      - "svcs/payment-switch-svc/**"
+      - "apps/payment-svc/**"
+      - "apps/payment-switch-svc/**"
       - ".github/workflows/payment-switch-svc.yaml"
 jobs:
   build-and-push-image:
@@ -21,10 +21,10 @@ jobs:
       - uses: bufbuild/buf-action@v1
         with:
           setup_only: true
-      - run: buf generate svcs/payment-svc --template svcs/payment-svc/buf.gen.yaml --output svcs/payment-svc
-      - run: buf generate svcs/payment-switch-svc --template svcs/payment-switch-svc/buf.gen.yaml --output svcs/payment-switch-svc
+      - run: buf generate apps/payment-svc --template apps/payment-svc/buf.gen.yaml --output apps/payment-svc
+      - run: buf generate apps/payment-switch-svc --template apps/payment-switch-svc/buf.gen.yaml --output apps/payment-switch-svc
       - name: Build
-        run: go build -v svcs/payment-switch-svc/cmd/server/main.go
+        run: go build -v apps/payment-switch-svc/cmd/server/main.go
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v4
         with:
@@ -46,4 +46,4 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          file: ./svcs/payment-switch-svc/Dockerfile
+          file: ./apps/payment-switch-svc/Dockerfile

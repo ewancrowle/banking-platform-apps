@@ -10,7 +10,7 @@ plugins:
       - paths=source_relative
       - simple
   - remote: buf.build/bufbuild/es
-    out: ../../pkgs/protos/gen/payment
+    out: ../../packages/protos/gen/merchant
     opt: target=ts
     include_imports: true
 inputs:
@@ -19,7 +19,7 @@ managed:
   enabled: true
   override:
     - file_option: go_package_prefix
-      value: payment-svc/gen
+      value: merchant-svc/gen
   disable:
     - file_option: go_package
       module: buf.build/bufbuild/protovalidate

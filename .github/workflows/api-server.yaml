@@ -1,12 +1,12 @@
 on:
   push:
     paths:
-      - "svcs/identity-svc/**"
-      - "svcs/account-svc/**"
-      - "svcs/oauth-svc/**"
-      - "svcs/confirmation-of-payee-svc/**"
-      - "svcs/payment-svc/**"
-      - "svcs/ledger-svc/**"
+      - "apps/identity-svc/**"
+      - "apps/account-svc/**"
+      - "apps/oauth-svc/**"
+      - "apps/confirmation-of-payee-svc/**"
+      - "apps/payment-svc/**"
+      - "apps/ledger-svc/**"
       - "apps/merchant-svc/**"
       - "apps/api-server/**"
       - ".github/workflows/api-server.yaml"
@@ -23,13 +23,13 @@ jobs:
       - uses: bufbuild/buf-action@v1
         with:
           setup_only: true
-      - run: buf generate svcs/identity-svc --include-imports --template svcs/identity-svc/buf.gen.yaml --output svcs/identity-svc
-      - run: buf generate svcs/account-svc --include-imports --template svcs/account-svc/buf.gen.yaml --output svcs/account-svc
-      - run: buf generate svcs/oauth-svc --include-imports --template svcs/oauth-svc/buf.gen.yaml --output svcs/oauth-svc
-      - run: buf generate svcs/confirmation-of-payee-svc --include-imports --template svcs/confirmation-of-payee-svc/buf.gen.yaml --output svcs/confirmation-of-payee-svc
-      - run: buf generate svcs/payment-svc --include-imports --template svcs/payment-svc/buf.gen.yaml --output svcs/payment-svc
-      - run: buf generate svcs/ledger-svc --include-imports --template svcs/ledger-svc/buf.gen.yaml --output svcs/ledger-svc
-      - run: buf generate svcs/merchant-svc --include-imports --template svcs/merchant-svc/buf.gen.yaml --output svcs/merchant-svc
+      - run: buf generate apps/identity-svc --include-imports --template apps/identity-svc/buf.gen.yaml --output apps/identity-svc
+      - run: buf generate apps/account-svc --include-imports --template apps/account-svc/buf.gen.yaml --output apps/account-svc
+      - run: buf generate apps/oauth-svc --include-imports --template apps/oauth-svc/buf.gen.yaml --output apps/oauth-svc
+      - run: buf generate apps/confirmation-of-payee-svc --include-imports --template apps/confirmation-of-payee-svc/buf.gen.yaml --output apps/confirmation-of-payee-svc
+      - run: buf generate apps/payment-svc --include-imports --template apps/payment-svc/buf.gen.yaml --output apps/payment-svc
+      - run: buf generate apps/ledger-svc --include-imports --template apps/ledger-svc/buf.gen.yaml --output apps/ledger-svc
+      - run: buf generate apps/merchant-svc --include-imports --template apps/merchant-svc/buf.gen.yaml --output apps/merchant-svc
       - uses: oven-sh/setup-bun@v2
       - name: Install dependencies
         run: bun install

@@ -1,8 +1,8 @@
 on:
   push:
     paths:
-      - "svcs/identity-svc/**"
-      - "svcs/confirmation-of-payee-svc/**"
+      - "apps/identity-svc/**"
+      - "apps/confirmation-of-payee-svc/**"
       - ".github/workflows/confirmation-of-payee-svc.yaml"
 jobs:
   build-and-push-image:
@@ -21,10 +21,10 @@ jobs:
       - uses: bufbuild/buf-action@v1
         with:
           setup_only: true
-      - run: buf generate svcs/identity-svc --template svcs/identity-svc/buf.gen.yaml --output svcs/identity-svc
-      - run: buf generate svcs/confirmation-of-payee-svc --template svcs/confirmation-of-payee-svc/buf.gen.yaml --output svcs/confirmation-of-payee-svc
+      - run: buf generate apps/identity-svc --template apps/identity-svc/buf.gen.yaml --output apps/identity-svc
+      - run: buf generate apps/confirmation-of-payee-svc --template apps/confirmation-of-payee-svc/buf.gen.yaml --output apps/confirmation-of-payee-svc
       - name: Build
-        run: go build -v svcs/confirmation-of-payee-svc/cmd/server/main.go
+        run: go build -v apps/confirmation-of-payee-svc/cmd/server/main.go
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v4
         with:
@@ -46,4 +46,4 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          file: ./svcs/confirmation-of-payee-svc/Dockerfile
+          file: ./apps/confirmation-of-payee-svc/Dockerfile

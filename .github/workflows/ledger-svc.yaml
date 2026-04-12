@@ -1,7 +1,7 @@
 on:
   push:
     paths:
-      - "svcs/ledger-svc/**"
+      - "apps/ledger-svc/**"
       - ".github/workflows/ledger-svc.yaml"
 jobs:
   build-and-push-image:
@@ -20,10 +20,10 @@ jobs:
       - uses: bufbuild/buf-action@v1
         with:
           setup_only: true
-      - run: buf generate svcs/account-svc --template svcs/account-svc/buf.gen.yaml --output svcs/account-svc
-      - run: buf generate svcs/ledger-svc --template svcs/ledger-svc/buf.gen.yaml --output svcs/ledger-svc
+      - run: buf generate apps/account-svc --template apps/account-svc/buf.gen.yaml --output apps/account-svc
+      - run: buf generate apps/ledger-svc --template apps/ledger-svc/buf.gen.yaml --output apps/ledger-svc
       - name: Build
-        run: go build -v svcs/ledger-svc/cmd/server/main.go
+        run: go build -v apps/ledger-svc/cmd/server/main.go
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v4
         with:
@@ -45,4 +45,4 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          file: ./svcs/ledger-svc/Dockerfile
+          file: ./apps/ledger-svc/Dockerfile

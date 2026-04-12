@@ -10,8 +10,9 @@ plugins:
       - paths=source_relative
       - simple
   - remote: buf.build/bufbuild/es
-    out: ../../pkgs/protos/gen/confirmation_of_payee
-    opt: target=ts
+    out: ../../packages/protos/gen/oauth
+    opt:
+      - target=ts
     include_imports: true
 inputs:
   - directory: proto
@@ -19,7 +20,7 @@ managed:
   enabled: true
   override:
     - file_option: go_package_prefix
-      value: confirmation-of-payee-svc/gen
+      value: oauth-svc/gen
   disable:
     - file_option: go_package
       module: buf.build/bufbuild/protovalidate
