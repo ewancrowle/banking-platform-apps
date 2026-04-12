@@ -1,6 +1,6 @@
 module migrations-tool
 
-go 1.26.1
+go 1.26.2
 
 require (
 	github.com/uptrace/bun v1.2.18
