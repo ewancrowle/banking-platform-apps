@@ -1,0 +1,47 @@
+on:
+  push:
+    paths:
+      - "apps/go-service-fraud-detection/**"
+      - ".github/workflows/go-service-fraud-detection.yaml"
+jobs:
+  build-and-push-image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v5
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.26.2"
+      - uses: bufbuild/buf-action@v1
+        with:
+          setup_only: true
+      - run: buf generate apps/go-service-fraud-detection --template apps/go-service-fraud-detection/buf.gen.yaml --output apps/go-service-fraud-detection
+      - name: Build
+        run: go build -v apps/go-service-fraud-detection/cmd/server/main.go
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}/fraud-detection-svc
+          tags: |
+            # set latest tag for default branch
+            type=raw,value=latest,enable={{is_default_branch}}
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          file: ./apps/go-service-fraud-detection/Dockerfile
