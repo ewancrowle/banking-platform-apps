@@ -12,7 +12,7 @@ type Handler struct {
 }
 
 // SwitchPayment implements [payment_switchv1connect.PaymentSwitchServiceHandler].
-func (h *Handler) SwitchPayment(ctx context.Context, reqIn *v1.PaymentSwitchRequest) (*v1.PaymentSwitchResponse, error) {
+func (h *Handler) SwitchPayment(ctx context.Context, reqIn *v1.SwitchPaymentRequest) (*v1.SwitchPaymentResponse, error) {
 	reqOut, err := processor.BuildRequest(reqIn.Payload)
 	if err != nil {
 		return nil, err
@@ -27,7 +27,7 @@ func (h *Handler) SwitchPayment(ctx context.Context, reqIn *v1.PaymentSwitchRequ
 	if err != nil {
 		return nil, err
 	}
-	return &v1.PaymentSwitchResponse{Payload: p}, nil
+	return &v1.SwitchPaymentResponse{Payload: p}, nil
 }
 
 func NewHandler(paymentSvc paymentv1c.PaymentServiceClient) *Handler {

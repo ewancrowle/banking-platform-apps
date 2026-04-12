@@ -52,14 +52,14 @@ message Payload {
   ];
 }
 
-message PaymentSwitchRequest {
+message SwitchPaymentRequest {
   Payload payload = 1;
 }
 
-message PaymentSwitchResponse {
+message SwitchPaymentResponse {
   Payload payload = 1;
 }
 
 service PaymentSwitchService {
-  rpc SwitchPayment(PaymentSwitchRequest) returns (PaymentSwitchResponse);
+  rpc SwitchPayment(SwitchPaymentRequest) returns (SwitchPaymentResponse);
 }
