@@ -1,11 +1,8 @@
 on:
   push:
     paths:
-      - "svcs/identity-svc/**"
-      - "svcs/ledger-svc/**"
-      - "svcs/payment-decision-svc/**"
       - "svcs/fraud-detection-svc/**"
-      - ".github/workflows/payment-decision-svc.yaml"
+      - ".github/workflows/fraud-detection-svc.yaml"
 jobs:
   build-and-push-image:
     runs-on: ubuntu-latest
@@ -23,12 +20,9 @@ jobs:
       - uses: bufbuild/buf-action@v1
         with:
           setup_only: true
-      - run: buf generate svcs/identity-svc --template svcs/identity-svc/buf.gen.yaml --output svcs/identity-svc
-      - run: buf generate svcs/ledger-svc --template svcs/ledger-svc/buf.gen.yaml --output svcs/ledger-svc
-      - run: buf generate svcs/payment-decision-svc --template svcs/payment-decision-svc/buf.gen.yaml --output svcs/payment-decision-svc
       - run: buf generate svcs/fraud-detection-svc --template svcs/fraud-detection-svc/buf.gen.yaml --output svcs/fraud-detection-svc
       - name: Build
-        run: go build -v svcs/payment-decision-svc/cmd/server/main.go
+        run: go build -v svcs/fraud-detection-svc/cmd/server/main.go
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v4
         with:
@@ -39,7 +33,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}/payment-decision-svc
+          images: ghcr.io/${{ github.repository }}/fraud-detection-svc
           tags: |
             # set latest tag for default branch
             type=raw,value=latest,enable={{is_default_branch}}
@@ -50,4 +44,4 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          file: ./svcs/payment-decision-svc/Dockerfile
+          file: ./svcs/fraud-detection-svc/Dockerfile
