@@ -1,9 +1,9 @@
 import { useTheme } from "@react-navigation/native";
 import { formOptions, useForm, useStore } from "@tanstack/react-form";
 import { router } from "expo-router";
+import { Decision } from "protos/payment";
 import { Alert, Keyboard, Pressable, ScrollView } from "react-native";
 import CurrencyInput from "react-native-currency-input";
-import { Decision } from "ts-protos/payment";
 import * as z from "zod";
 import trpc from "@/api/trpc";
 import { Section } from "@/components/section";

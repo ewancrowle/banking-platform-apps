@@ -1,8 +1,8 @@
 import { useTheme } from "@react-navigation/native";
 import { router } from "expo-router";
+import type { Payment } from "protos/payment";
 import type React from "react";
 import { FlatList, Pressable, StyleSheet, View } from "react-native";
-import type { Payment } from "ts-protos/payment";
 import { TransactionItem } from "./transaction-item";
 
 interface TransactionListProps {

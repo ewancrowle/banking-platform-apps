@@ -2,8 +2,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@react-navigation/native";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
+import type { Payment } from "protos/payment";
 import { StyleSheet, View } from "react-native";
-import type { Payment } from "ts-protos/payment";
 import { ThemedText } from "@/components/themed-text";
 import { getPaymentIcon } from "@/utils/get-payment-icon";
 
