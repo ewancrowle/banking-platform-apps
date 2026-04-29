@@ -179,7 +179,11 @@ func (s service) AuthorisePayment(ctx context.Context, request *v1.AuthorisePaym
 		}
 
 	default:
-		p.Status = payment.StatusAuthorised
+		if p.Type == payment.TypeDeposit {
+			p.Status = payment.StatusCaptured
+		} else {
+			p.Status = payment.StatusAuthorised
+		}
 	}
 
 	if err = p.SetStatus(ctx, s.db, p.Status); err != nil {
