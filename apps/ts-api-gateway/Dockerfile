@@ -4,11 +4,13 @@ WORKDIR /usr/src/app
 
 # Copy package files
 COPY package.json bun.lock ./
+COPY apps/ts-mobile-app/package.json ./apps/ts-mobile-app/
 COPY apps/ts-api-gateway/package.json ./apps/ts-api-gateway/
 COPY packages/ts-protos/package.json ./packages/ts-protos/
 
 # Install only production dependencies
-RUN rm bun.lock && bun install
+# RUN rm bun.lock && bun install
+RUN bun install --frozen-lockfile
 
 # Release stage
 FROM oven/bun:1 AS release
