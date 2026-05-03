@@ -28,7 +28,7 @@
     "@trpc/server": "^11.17.0",
     "protos": "workspace:*",
     "superjson": "^2.2.6",
-    "zod": "^4.3.6"
+    "zod": "^4.4.2"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
